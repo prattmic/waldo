@@ -3,7 +3,7 @@ load("/tools/raw_binary", "raw_binary")
 
 efm32_binary(
     name = "firmware",
-    srcs = ["firmware.c"],
+    srcs = ["firmware.cc"],
 )
 
 raw_binary(
