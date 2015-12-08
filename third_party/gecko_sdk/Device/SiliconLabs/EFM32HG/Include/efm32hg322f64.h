@@ -225,9 +225,9 @@ typedef enum IRQn
 /** @} End of group EFM32HG322F64_Part */
 
 #define ARM_MATH_CM0PLUS
-#include "arm_math.h"       /* To get __CLZ definitions etc. */
-#include "core_cm0plus.h"   /* Cortex-M0+ processor and core peripherals */
-#include "system_efm32hg.h" /* System Header */
+#include "third_party/CMSIS/Include/arm_math.h"       /* To get __CLZ definitions etc. */
+#include "third_party/CMSIS/Include/core_cm0plus.h"   /* Cortex-M0+ processor and core peripherals */
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/system_efm32hg.h" /* System Header */
 
 /**************************************************************************//**
  * @defgroup EFM32HG322F64_Peripheral_TypeDefs EFM32HG322F64 Peripheral TypeDefs
@@ -235,37 +235,37 @@ typedef enum IRQn
  * @brief Device Specific Peripheral Register Structures
  *****************************************************************************/
 
-#include "efm32hg_aes.h"
-#include "efm32hg_dma_ch.h"
-#include "efm32hg_dma.h"
-#include "efm32hg_usb_diep.h"
-#include "efm32hg_usb_doep.h"
-#include "efm32hg_usb.h"
-#include "efm32hg_msc.h"
-#include "efm32hg_emu.h"
-#include "efm32hg_rmu.h"
-#include "efm32hg_cmu.h"
-#include "efm32hg_timer_cc.h"
-#include "efm32hg_timer.h"
-#include "efm32hg_acmp.h"
-#include "efm32hg_usart.h"
-#include "efm32hg_prs_ch.h"
-#include "efm32hg_prs.h"
-#include "efm32hg_idac.h"
-#include "efm32hg_gpio_p.h"
-#include "efm32hg_gpio.h"
-#include "efm32hg_vcmp.h"
-#include "efm32hg_adc.h"
-#include "efm32hg_leuart.h"
-#include "efm32hg_pcnt.h"
-#include "efm32hg_i2c.h"
-#include "efm32hg_rtc.h"
-#include "efm32hg_wdog.h"
-#include "efm32hg_mtb.h"
-#include "efm32hg_dma_descriptor.h"
-#include "efm32hg_devinfo.h"
-#include "efm32hg_romtable.h"
-#include "efm32hg_calibrate.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_aes.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_dma_ch.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_dma.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_usb_diep.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_usb_doep.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_usb.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_msc.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_emu.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_rmu.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_cmu.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_timer_cc.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_timer.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_acmp.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_usart.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_prs_ch.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_prs.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_idac.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_gpio_p.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_gpio.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_vcmp.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_adc.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_leuart.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_pcnt.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_i2c.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_rtc.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_wdog.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_mtb.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_dma_descriptor.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_devinfo.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_romtable.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_calibrate.h"
 
 /** @} End of group EFM32HG322F64_Peripheral_TypeDefs */
 
@@ -346,9 +346,9 @@ typedef enum IRQn
  * @{
  *****************************************************************************/
 
-#include "efm32hg_prs_signals.h"
-#include "efm32hg_dmareq.h"
-#include "efm32hg_dmactrl.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_prs_signals.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_dmareq.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_dmactrl.h"
 
 /**************************************************************************//**
  * @defgroup EFM32HG322F64_UNLOCK EFM32HG322F64 Unlock Codes
@@ -369,8 +369,8 @@ typedef enum IRQn
  * @{
  *****************************************************************************/
 
-#include "efm32hg_af_ports.h"
-#include "efm32hg_af_pins.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_af_ports.h"
+#include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/efm32hg_af_pins.h"
 
 /** @} End of group EFM32HG322F64_Alternate_Function */
 

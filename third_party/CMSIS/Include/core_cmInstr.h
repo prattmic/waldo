@@ -852,12 +852,12 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __STRT(uint32_t value, v
 
 #elif defined ( __ICCARM__ ) /*------------------ ICC Compiler -------------------*/
 /* IAR iccarm specific functions */
-#include <cmsis_iar.h>
+#include "third_party/CMSIS/Include/cmsis_iar.h"
 
 
 #elif defined ( __TMS470__ ) /*---------------- TI CCS Compiler ------------------*/
 /* TI CCS specific functions */
-#include <cmsis_ccs.h>
+#include "third_party/CMSIS/Include/cmsis_ccs.h"
 
 
 #elif defined ( __TASKING__ ) /*------------------ TASKING Compiler --------------*/
@@ -871,7 +871,7 @@ __attribute__( ( always_inline ) ) __STATIC_INLINE void __STRT(uint32_t value, v
 
 #elif defined ( __CSMC__ ) /*------------------ COSMIC Compiler -------------------*/
 /* Cosmic specific functions */
-#include <cmsis_csm.h>
+#include "third_party/CMSIS/Include/cmsis_csm.h"
 
 #endif
 
