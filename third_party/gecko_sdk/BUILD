@@ -1,5 +1,9 @@
 licenses(["notice"])  # zlib license
 
+package(
+    default_visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "efm32hg322f64",
     defines = ["EFM32HG322F64"],
@@ -60,3 +64,5 @@ cc_library(
     deps = [":efm32hg322f64"],
     alwayslink = 1,
 )
+
+exports_files(["Device/SiliconLabs/EFM32HG/Source/GCC/efm32hg.ld"])
