@@ -58,4 +58,5 @@ cc_library(
         "Device/SiliconLabs/EFM32HG/Source/GCC/startup_efm32hg.c",
     ],
     deps = [":efm32hg322f64"],
+    alwayslink = 1,
 )
