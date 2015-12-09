@@ -1,11 +1,11 @@
 #include <memory>
-#include <vector>
+
+#include "external/nanopb/pb_encode.h"
 
 namespace waldo {
 
 void Main() {
-    auto a = std::make_unique<int>(5);
-    std::vector<int> v;
+    auto a = std::make_unique<void*>(reinterpret_cast<void*>(&pb_encode));
     while (1);
 }
 

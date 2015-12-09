@@ -4,6 +4,7 @@ load("/tools/raw_binary", "raw_binary")
 efm32_binary(
     name = "firmware",
     srcs = ["firmware.cc"],
+    deps = ["@nanopb//:nanopb"],
 )
 
 raw_binary(
