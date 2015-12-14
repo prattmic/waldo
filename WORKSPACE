@@ -5,9 +5,8 @@ new_git_repository(
     build_file = "BUILD.googletest",
 )
 
-new_git_repository(
+git_repository(
     name = "nanopb",
-    remote = "https://github.com/nanopb/nanopb",
-    tag = "nanopb-0.3.4",
-    build_file = "BUILD.nanopb",
+    remote = "https://github.com/prattmic/nanopb",
+    commit = "b6c9b50e07d92d0029d3899c9ba80325e05f7605",
 )
