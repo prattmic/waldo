@@ -1,3 +1,5 @@
+package(default_visibility = ["//visibility:public"])
+
 cc_library(
     name = "byteio",
     hdrs = ["byteio.h"],
@@ -9,8 +11,8 @@ cc_library(
     srcs = ["linux_byteio.cc"],
     hdrs = ["linux_byteio.h"],
     deps = [
-        "@nanopb//util/task:status",
         ":byteio",
+        "@nanopb//util/task:status",
     ],
 )
 

@@ -8,7 +8,7 @@
 
 namespace io {
 
-class LinuxByteIO : ByteIO {
+class LinuxByteIO : public ByteIO {
  public:
     static ::util::StatusOr<LinuxByteIO> OpenFile(const char *filename);
 
