@@ -13,11 +13,15 @@ using ::util::Status;
 
 class SIM808 {
  public:
+    SIM808() : io_(nullptr) {}
+
     SIM808(std::unique_ptr<io::ByteIO> io) : io_(std::move(io)) {}
 
     Status Initialize();
 
  private:
+    Status VerifyResponse(const char *);
+
     std::unique_ptr<io::ByteIO> io_;
 };
 

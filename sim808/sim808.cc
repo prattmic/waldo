@@ -4,24 +4,28 @@
 
 namespace sim808 {
 
-Status SIM808::Initialize() {
-    auto status = io_->Write('A');
-    if (!status.ok())
-        return status;
+Status SIM808::VerifyResponse(const char *expected) {
+    while (*expected) {
+        auto statusor = io_->Read();
+        if (!statusor.ok())
+            return statusor.status();
 
-    status = io_->Write('T');
-    if (!status.ok())
-        return status;
+        if (statusor.Value() != *expected)
+            return Status(::util::error::Code::UNKNOWN, "unexpected response");
 
-    status = io_->Write('\r');
-    if (!status.ok())
-        return status;
-
-    status = io_->Write('\n');
-    if (!status.ok())
-        return status;
+        expected++;
+    }
 
     return Status::OK;
+}
+
+Status SIM808::Initialize() {
+    // TODO(prattmic): We should check that all the bytes were written.
+    auto statusor = io_->WriteString("AT\r\n");
+    if (!statusor.ok())
+        return statusor.status();
+
+    return VerifyResponse("AT\r\nOK\r\n");
 }
 
 }  // namespace sim808

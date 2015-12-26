@@ -14,6 +14,7 @@ cc_test(
     deps = [
         ":sim808",
         "//io:linux_byteio",
+        "//io:logging_byteio",
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
