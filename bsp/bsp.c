@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <sys/stat.h>
+#include <sys/time.h>
 #include <sys/times.h>
 
 /*
@@ -105,5 +106,11 @@ int _wait(int *status) {
 // TODO(prattmic): write to UART.
 int _write(int file, char *ptr, int len) {
     errno = EFAULT;
+    return -1;
+}
+
+// TODO(prattmic): complete
+int _gettimeofday(struct timeval *tv, struct timezone *tz) {
+    errno = EINVAL;
     return -1;
 }

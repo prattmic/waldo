@@ -9,7 +9,7 @@
 using io::LinuxByteIO;
 
 util::StatusOr<LinuxByteIO> LinuxByteIO::OpenFile(const char *filename) {
-    int fd = open(filename, O_RDWR);
+    int fd = open(filename, O_RDWR|O_NONBLOCK);
     if (fd < 0) {
         return util::Status(util::error::Code::UNKNOWN, "open failed");
     }
@@ -24,6 +24,9 @@ util::StatusOr<char> LinuxByteIO::Read() {
         if (n < 0) {
             if (errno == EINTR) {
                 continue;
+            } else if (errno == EAGAIN) {
+                return util::Status(util::error::Code::RESOURCE_EXHAUSTED,
+                                    "would block");
             }
             return util::Status(util::error::Code::UNKNOWN, "read failed");
         } else if (n == 0) {
@@ -40,6 +43,9 @@ util::Status LinuxByteIO::Write(char c) {
         if (n < 0) {
             if (errno == EINTR) {
                 continue;
+            } else if (errno == EAGAIN) {
+                return util::Status(util::error::Code::RESOURCE_EXHAUSTED,
+                                    "would block");
             }
             return util::Status(util::error::Code::UNKNOWN, "write failed");
         }

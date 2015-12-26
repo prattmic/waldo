@@ -1,6 +1,7 @@
 #ifndef SIM808_SIM808_H_
 #define SIM808_SIM808_H_
 
+#include <chrono>
 #include <memory>
 #include <utility>
 #include "external/nanopb/util/task/status.h"
@@ -20,7 +21,8 @@ class SIM808 {
     Status Initialize();
 
  private:
-    Status VerifyResponse(const char *);
+    Status VerifyResponse(const char *expected,
+                          std::chrono::milliseconds timeout);
 
     std::unique_ptr<io::ByteIO> io_;
 };
