@@ -32,7 +32,7 @@ TEST(LoggingByteIOTest, Write) {
     EXPECT_TRUE(statusor.ok()) << statusor.status().error_message();
     EXPECT_EQ('A', statusor.Value());
 
-    const char expected_log[] = "Writing: A\n";
+    const char expected_log[] = "Writing: 'A'\n";
     for (size_t i = 0; i < sizeof(expected_log)-1; i++) {
         auto statusor = read_log.Read();
         EXPECT_TRUE(statusor.ok()) << statusor.status().error_message();
@@ -61,7 +61,7 @@ TEST(LoggingByteIOTest, Read) {
     EXPECT_TRUE(statusor.ok()) << statusor.status().error_message();
     EXPECT_EQ('A', statusor.Value());
 
-    const char expected_log[] = "Read: A\n";
+    const char expected_log[] = "Read: 'A'\n";
     for (size_t i = 0; i < sizeof(expected_log)-1; i++) {
         auto statusor = read_log.Read();
         EXPECT_TRUE(statusor.ok()) << statusor.status().error_message();
