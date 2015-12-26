@@ -41,11 +41,24 @@ TEST_F(SIM808Test, Connect) {
     EXPECT_TRUE(status.ok()) << status.error_message();
 }
 
-TEST_F(SIM808Test, GNSEnabled) {
+TEST_F(SIM808Test, GNSEnable) {
     auto status = sim_.Initialize();
+    ASSERT_TRUE(status.ok()) << status.error_message();
+
+    status = sim_.GNSEnable(false);
     ASSERT_TRUE(status.ok()) << status.error_message();
 
     auto statusor = sim_.GNSEnabled();
     ASSERT_TRUE(statusor.ok()) << statusor.status().error_message();
     EXPECT_FALSE(statusor.Value());
+
+    status = sim_.GNSEnable(true);
+    ASSERT_TRUE(status.ok()) << status.error_message();
+
+    statusor = sim_.GNSEnabled();
+    ASSERT_TRUE(statusor.ok()) << statusor.status().error_message();
+    EXPECT_TRUE(statusor.Value());
+
+    status = sim_.GNSEnable(false);
+    EXPECT_TRUE(status.ok()) << status.error_message();
 }

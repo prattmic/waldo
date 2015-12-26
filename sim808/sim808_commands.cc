@@ -6,8 +6,6 @@
 namespace sim808 {
 
 StatusOr<bool> SIM808::GNSEnabled() {
-    io_->FlushRead();
-
     char response[2] = { '\0' };
     auto statusor = SendSynchronousCommand("AT+CGNSPWR?", "CGNSPWR",
                                            response, 2,
@@ -22,6 +20,15 @@ StatusOr<bool> SIM808::GNSEnabled() {
         return false;
 
     return true;
+}
+
+Status SIM808::GNSEnable(bool enable) {
+    if (enable)
+        return SendSimpleCommand("AT+CGNSPWR=1", "OK",
+                                 std::chrono::milliseconds(100));
+    else
+        return SendSimpleCommand("AT+CGNSPWR=0", "OK",
+                                 std::chrono::milliseconds(100));
 }
 
 }  // namespace sim808

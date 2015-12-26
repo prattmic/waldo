@@ -24,6 +24,9 @@ class SIM808 {
     // Check if the GNS module is enabled.
     StatusOr<bool> GNSEnabled();
 
+    // Enable/disable GNS module.
+    Status GNSEnable(bool enable);
+
  private:
     // Send a command and with a fixed expected response.
     Status SendSimpleCommand(const char *command, const char *response,
