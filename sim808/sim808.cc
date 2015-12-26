@@ -84,7 +84,11 @@ Status SIM808::CheckReady() {
 }
 
 Status SIM808::Initialize() {
-    auto status = CheckReady();
+    auto status = io_->FlushRead();
+    if (!status.ok())
+        return status;
+
+    status = CheckReady();
     if (status.ok())
         return Status::OK;
 
