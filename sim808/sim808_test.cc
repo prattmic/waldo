@@ -37,7 +37,15 @@ class SIM808Test : public ::testing::Test {
 };
 
 TEST_F(SIM808Test, Connect) {
-    // TODO: check return
     auto status = sim_.Initialize();
     EXPECT_TRUE(status.ok()) << status.error_message();
+}
+
+TEST_F(SIM808Test, GNSEnabled) {
+    auto status = sim_.Initialize();
+    ASSERT_TRUE(status.ok()) << status.error_message();
+
+    auto statusor = sim_.GNSEnabled();
+    ASSERT_TRUE(statusor.ok()) << statusor.status().error_message();
+    EXPECT_FALSE(statusor.Value());
 }

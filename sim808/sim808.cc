@@ -63,7 +63,7 @@ Status SIM808::InitAutoBaud() {
 }
 
 // Disabling command echoing makes further command responses easier to handle.
-// We can't use SendCommand because it assumes that command echoing is
+// We can't use SendSimpleCommand because it assumes that command echoing is
 // disabled.
 Status SIM808::DisableCommandEcho() {
         auto end = std::chrono::system_clock::now()
@@ -80,7 +80,7 @@ Status SIM808::DisableCommandEcho() {
 
 // Check if the device is ready and can skip initialization.
 Status SIM808::CheckReady() {
-    return SendCommand("AT", "OK", std::chrono::milliseconds(100));
+    return SendSimpleCommand("AT", "OK", std::chrono::milliseconds(100));
 }
 
 Status SIM808::Initialize() {
@@ -95,18 +95,15 @@ Status SIM808::Initialize() {
     return DisableCommandEcho();
 }
 
-Status SIM808::SendCommand(const char *command, const char *response,
-                           std::chrono::milliseconds timeout) {
-    auto end = std::chrono::system_clock::now() + timeout;
-
-    auto statusor = io_->WriteString(command, end);
+Status SIM808::WriteCommand(const char *command,
+                            std::chrono::system_clock::time_point timeout) {
+    auto statusor = io_->WriteString(command, timeout);
     if (!statusor.ok()) {
-        TryAbort();
         return statusor.status();
     }
 
     while (1) {
-        if (std::chrono::system_clock::now() > end)
+        if (std::chrono::system_clock::now() > timeout)
             return Status(::util::error::Code::DEADLINE_EXCEEDED, "timeout");
 
         auto status = io_->Write('\r');
@@ -122,18 +119,114 @@ Status SIM808::SendCommand(const char *command, const char *response,
         break;
     }
 
+    return Status::OK;
+}
+
+Status SIM808::SendSimpleCommand(const char *command, const char *response,
+                                 std::chrono::milliseconds timeout) {
+    auto end = std::chrono::system_clock::now() + timeout;
+
+    auto status = WriteCommand(command, end);
+    if (!status.ok()) {
+        TryAbort();
+        return status;
+    }
+
     // Preamble
-    auto status = VerifyResponse("\r\n", end);
+    status = VerifyResponse("\r\n", end);
     if (!status.ok())
         return status;
 
-    // TODO: don't pass the same timeout multiple times.
     status = VerifyResponse(response, end);
     if (!status.ok())
         return status;
 
     // Termination
     return VerifyResponse("\r\n", end);
+}
+
+StatusOr<size_t> SIM808::SendSynchronousCommand(
+        const char *command, const char *prefix, char *response,
+        size_t size, std::chrono::milliseconds timeout) {
+    auto end = std::chrono::system_clock::now() + timeout;
+
+    auto status = WriteCommand(command, end);
+    if (!status.ok()) {
+        TryAbort();
+        return status;
+    }
+
+    // Preamble
+    status = VerifyResponse("\r\n", end);
+    if (!status.ok())
+        return status;
+
+    // Synchronous response start
+    status = VerifyResponse("+", end);
+    if (!status.ok())
+        return status;
+
+    status = VerifyResponse(prefix, end);
+    if (!status.ok())
+        return status;
+
+    status = VerifyResponse(": ", end);
+    if (!status.ok())
+        return status;
+
+    // Response content
+    size_t total = 0;
+    while (1) {
+        auto statusor = io_->Read();
+        if (!statusor.ok()) {
+            // Would block. retry.
+            if (statusor.status().error_code() !=
+                ::util::error::Code::RESOURCE_EXHAUSTED)
+                continue;
+
+            return status;
+        }
+
+        char c = statusor.Value();
+
+        // End of the response?
+        if (c == '\r')
+            break;
+
+        // We keep consuming the response even if there is no more room
+        // in the buffer, so we can see if the command itself was successful.
+        if (size > 0) {
+            *response++ = c;
+            total++;
+            size--;
+        }
+    }
+
+    // Everything is A-OK?
+    status = VerifyResponse("\n\r\nOK\r\n", end);
+    if (!status.ok())
+        return status;
+
+    return total;
+}
+
+StatusOr<bool> SIM808::GNSEnabled() {
+    io_->FlushRead();
+
+    char response[2] = { '\0' };
+    auto statusor = SendSynchronousCommand("AT+CGNSPWR?", "CGNSPWR",
+                                           response, 2,
+                                           std::chrono::milliseconds(100));
+    if (!statusor.ok())
+        return statusor.status();
+
+    if (statusor.Value() != 1)
+        return Status(::util::error::Code::UNKNOWN, "wrong size response");
+
+    if (response[0] == '0')
+        return false;
+
+    return true;
 }
 
 }  // namespace sim808
