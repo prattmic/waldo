@@ -32,16 +32,23 @@ Status SIM808::VerifyResponse(const char *expected,
     return Status::OK;
 }
 
+void SIM808::TryAbort() {
+    // Send a ~ since it is not a valid component of any command,
+    // hopefully making the partial command an error.
+    io_->WriteString("~\r");
+}
+
 Status SIM808::Initialize() {
     for (int i = 0; i < 10; i++) {
         auto status = io_->FlushRead();
         if (!status.ok())
             return status;
 
-        // TODO(prattmic): We should check that all the bytes were written.
         auto statusor = io_->WriteString("AT\r");
-        if (!statusor.ok())
+        if (!statusor.ok()) {
+            TryAbort();
             return statusor.status();
+        }
 
         status = VerifyResponse("AT\r\r\nOK\r\n",
                                 std::chrono::milliseconds(100));

@@ -24,6 +24,9 @@ class SIM808 {
     Status VerifyResponse(const char *expected,
                           std::chrono::milliseconds timeout);
 
+    // Try to abort a partially written command. May not be successful.
+    void TryAbort();
+
     std::unique_ptr<io::ByteIO> io_;
 };
 
