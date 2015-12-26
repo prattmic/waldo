@@ -21,11 +21,11 @@ Status SIM808::VerifyResponse(const char *expected) {
 
 Status SIM808::Initialize() {
     // TODO(prattmic): We should check that all the bytes were written.
-    auto statusor = io_->WriteString("AT\r\n");
+    auto statusor = io_->WriteString("AT\r");
     if (!statusor.ok())
         return statusor.status();
 
-    return VerifyResponse("AT\r\nOK\r\n");
+    return VerifyResponse("AT\r\r\nOK\r\n");
 }
 
 }  // namespace sim808

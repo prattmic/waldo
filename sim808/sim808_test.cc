@@ -17,11 +17,7 @@ using sim808::SIM808;
 class SIM808Test : public ::testing::Test {
  protected:
     virtual void SetUp() {
-        int fd = open("/tmp/dummy.txt", O_CREAT|O_RDONLY, 0644);
-        ASSERT_GE(fd, 0);
-        ASSERT_EQ(0, close(fd));
-
-        auto statusor = LinuxByteIO::OpenFile("/tmp/dummy.txt");
+        auto statusor = LinuxByteIO::OpenFile("/dev/ttyACM0");
         ASSERT_TRUE(statusor.ok()) << statusor.status().ToString();
         auto sim_io = std::unique_ptr<ByteIO>(
             new LinuxByteIO(statusor.ConsumeValue()));
@@ -42,5 +38,6 @@ class SIM808Test : public ::testing::Test {
 
 TEST_F(SIM808Test, Connect) {
     // TODO: check return
-    sim_.Initialize();
+    auto status = sim_.Initialize();
+    EXPECT_TRUE(status.ok()) << status.error_message();
 }

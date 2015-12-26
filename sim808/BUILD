@@ -18,4 +18,6 @@ cc_test(
         "@googletest//:gtest",
         "@googletest//:gtest_main",
     ],
+    # We need the local serial port.
+    tags = ["local"],
 )
