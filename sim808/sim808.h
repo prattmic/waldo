@@ -26,7 +26,7 @@ class SIM808 {
                        std::chrono::milliseconds timeout);
 
     Status VerifyResponse(const char *expected,
-                          std::chrono::milliseconds timeout);
+                          std::chrono::system_clock::time_point timeout);
 
     // Try to abort a partially written command. May not be successful.
     void TryAbort();

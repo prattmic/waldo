@@ -6,11 +6,9 @@
 namespace sim808 {
 
 Status SIM808::VerifyResponse(const char *expected,
-                              std::chrono::milliseconds timeout) {
-    auto end = std::chrono::system_clock::now() + timeout;
-
+                              std::chrono::system_clock::time_point timeout) {
     while (*expected) {
-        if (std::chrono::system_clock::now() > end)
+        if (std::chrono::system_clock::now() > timeout)
             return Status(::util::error::Code::DEADLINE_EXCEEDED, "timeout");
 
         auto statusor = io_->Read();
@@ -42,18 +40,20 @@ void SIM808::TryAbort() {
 // to get it ready for further commands.
 Status SIM808::InitAutoBaud() {
     for (int i = 0; i < 10; i++) {
+        auto end = std::chrono::system_clock::now()
+            + std::chrono::milliseconds(100);
+
         auto status = io_->FlushRead();
         if (!status.ok())
             return status;
 
-        auto statusor = io_->WriteString("AT\r");
+        auto statusor = io_->WriteString("AT\r", end);
         if (!statusor.ok()) {
             TryAbort();
             return statusor.status();
         }
 
-        status = VerifyResponse("AT\r\r\nOK\r\n",
-                                std::chrono::milliseconds(100));
+        status = VerifyResponse("AT\r\r\nOK\r\n", end);
         if (status.ok())
             return Status::OK;
     }
@@ -66,14 +66,16 @@ Status SIM808::InitAutoBaud() {
 // We can't use SendCommand because it assumes that command echoing is
 // disabled.
 Status SIM808::DisableCommandEcho() {
-        auto statusor = io_->WriteString("ATE0\r");
+        auto end = std::chrono::system_clock::now()
+            + std::chrono::milliseconds(100);
+
+        auto statusor = io_->WriteString("ATE0\r", end);
         if (!statusor.ok()) {
             TryAbort();
             return statusor.status();
         }
 
-        return VerifyResponse("ATE0\r\r\nOK\r\n",
-                              std::chrono::milliseconds(100));
+        return VerifyResponse("ATE0\r\r\nOK\r\n", end);
 }
 
 // Check if the device is ready and can skip initialization.
@@ -95,13 +97,18 @@ Status SIM808::Initialize() {
 
 Status SIM808::SendCommand(const char *command, const char *response,
                            std::chrono::milliseconds timeout) {
-    auto statusor = io_->WriteString(command);
+    auto end = std::chrono::system_clock::now() + timeout;
+
+    auto statusor = io_->WriteString(command, end);
     if (!statusor.ok()) {
         TryAbort();
         return statusor.status();
     }
 
     while (1) {
+        if (std::chrono::system_clock::now() > end)
+            return Status(::util::error::Code::DEADLINE_EXCEEDED, "timeout");
+
         auto status = io_->Write('\r');
         if (!status.ok()) {
             // Would block. retry.
@@ -116,17 +123,17 @@ Status SIM808::SendCommand(const char *command, const char *response,
     }
 
     // Preamble
-    auto status = VerifyResponse("\r\n", timeout);
+    auto status = VerifyResponse("\r\n", end);
     if (!status.ok())
         return status;
 
     // TODO: don't pass the same timeout multiple times.
-    status = VerifyResponse(response, timeout);
+    status = VerifyResponse(response, end);
     if (!status.ok())
         return status;
 
     // Termination
-    return VerifyResponse("\r\n", timeout);
+    return VerifyResponse("\r\n", end);
 }
 
 }  // namespace sim808

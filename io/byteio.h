@@ -2,6 +2,7 @@
 #define IO_BYTEIO_H_
 
 #include <stdint.h>
+#include <chrono>
 #include "external/nanopb/util/task/status.h"
 #include "external/nanopb/util/task/statusor.h"
 
@@ -35,12 +36,22 @@ class ByteIO {
     }
 
     // Write a string. Returns the number of bytes written, or an error
-    // if no bytes were written. Blocks until all bytes are written.
-    ::util::StatusOr<size_t> WriteString(const char *s) {
+    // if no bytes were written. Blocks until all bytes are written, or
+    // timeout is reached.
+    ::util::StatusOr<size_t> WriteString(const char *s,
+            std::chrono::system_clock::time_point timeout) {
         ::util::Status status;
         size_t count = 0;
 
         while (*s) {
+            if (std::chrono::system_clock::now() > timeout) {
+                if (count)
+                    return count;
+                else
+                    return ::util::Status(
+                        ::util::error::Code::DEADLINE_EXCEEDED, "timeout");
+            }
+
             status = Write(*s);
             if (!status.ok()) {
                 // Would block. retry.
@@ -59,7 +70,15 @@ class ByteIO {
         }
 
         return count;
-    };
+    }
+
+    // WriteString with a default timeout of 100ms.
+    ::util::StatusOr<size_t> WriteString(const char *s) {
+        auto end = std::chrono::system_clock::now()
+            + std::chrono::milliseconds(100);
+
+        return WriteString(s, end);
+    }
 };
 
 }  // namespace io
