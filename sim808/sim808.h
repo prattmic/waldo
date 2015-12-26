@@ -21,11 +21,19 @@ class SIM808 {
     Status Initialize();
 
  private:
+    // Send a command and verify that the response is correct.
+    Status SendCommand(const char *command, const char *response,
+                       std::chrono::milliseconds timeout);
+
     Status VerifyResponse(const char *expected,
                           std::chrono::milliseconds timeout);
 
     // Try to abort a partially written command. May not be successful.
     void TryAbort();
+
+    Status CheckReady();
+    Status InitAutoBaud();
+    Status DisableCommandEcho();
 
     std::unique_ptr<io::ByteIO> io_;
 };
