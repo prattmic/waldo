@@ -1,6 +1,9 @@
 cc_library(
     name = "sim808",
-    srcs = ["sim808.cc"],
+    srcs = [
+        "sim808_core.cc",
+        "sim808_commands.cc",
+    ],
     hdrs = ["sim808.h"],
     deps = [
         "//io:byteio",
