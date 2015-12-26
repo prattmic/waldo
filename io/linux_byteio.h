@@ -35,9 +35,11 @@ class LinuxByteIO : public ByteIO {
     // Copy constructor.
     LinuxByteIO(const LinuxByteIO& other) = delete;
 
- private:
+    // Construct from fd. LinuxByteIO takes ownership of the fd, and will
+    // close it when it is destroyed.
     LinuxByteIO(int fd) : fd_(fd) {};
 
+ private:
     int fd_;
 };
 
