@@ -31,6 +31,7 @@ cc_library(
     hdrs = ["logging_byteio.h"],
     deps = [
         ":byteio",
+        "//util:string",
         "@nanopb//util/task:status",
     ],
 )

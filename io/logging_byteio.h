@@ -1,13 +1,46 @@
 #ifndef IO_LOGGING_BYTEIO_H_
 #define IO_LOGGING_BYTEIO_H_
 
+#include <ctype.h>
+#include <string.h>
 #include <memory>
 #include <utility>
 #include "external/nanopb/util/task/status.h"
 #include "external/nanopb/util/task/statusor.h"
 #include "io/byteio.h"
+#include "util/string.h"
 
 namespace io {
+
+namespace {
+
+// Create a nice readable string for a char.
+// Biggest possible is "0xFF\n\0" -> 6 bytes
+void pretty_char(char c, char buf[6]) {
+    memset(buf, 0, 6);
+
+    if (isprint(c)) {
+        buf[0] = '\'';
+        buf[1] = c;
+        buf[2] = '\'';
+        buf[3] = '\n';
+        buf[4] = '\0';
+    } else if (c == '\r') {
+        memcpy(buf, "'\\r'\n", 6);
+    } else if (c == '\n') {
+        memcpy(buf, "'\\n'\n", 6);
+    } else {
+        buf[0] = '0';
+        buf[1] = 'x';
+        ::util::uitoa(c, &buf[2], 4, 16);
+        if (buf[3] == '\0')
+            buf[3] = '\n';
+        else
+            buf[4] = '\n';
+    }
+}
+
+}  // namespace
 
 // Logs reads and writes to a logger ByteIO. Logging is best-effort, no
 // error checking is done.
@@ -22,9 +55,10 @@ class LoggingByteIO : public ByteIO {
         auto statusor = io_->Read();
         if (statusor.ok()) {
             log_->WriteString("Read: ");
-            char str[3] = { '\0', '\n', '\0' };
-            str[0] = statusor.Value();
-            log_->WriteString(str);
+
+            char buf[6];
+            pretty_char(statusor.Value(), buf);
+            log_->WriteString(buf);
         } else {
             log_->WriteString("Error reading: ");
             log_->WriteString(statusor.status().error_message());
@@ -36,9 +70,11 @@ class LoggingByteIO : public ByteIO {
 
     // Write a single byte.
     virtual ::util::Status Write(char c) override {
-        char str[3] = { c, '\n', '\0' };
         log_->WriteString("Writing: ");
-        log_->WriteString(str);
+
+        char buf[6];
+        pretty_char(c, buf);
+        log_->WriteString(buf);
 
         auto status = io_->Write(c);
         if (!status.ok()) {
