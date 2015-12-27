@@ -21,8 +21,9 @@ cc_test(
         ":sim808",
         "//io:linux_byteio",
         "//io:logging_byteio",
+        "//util:status_test",
         "@googletest//:gtest",
-        "@googletest//:gtest_main",
+        "@googletest//:gmock_main",
     ],
     # We need the local serial port.
     tags = ["local"],

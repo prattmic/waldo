@@ -4,6 +4,7 @@
 #include "external/googletest/googletest/include/gtest/gtest.h"
 #include "external/nanopb/util/task/status.h"
 #include "io/linux_byteio.h"
+#include "util/status_test.h"
 
 using io::LinuxByteIO;
 
@@ -27,35 +28,35 @@ TEST(LinuxByteIOTest, ReadWriteFile) {
     ASSERT_GE(fd, 0) << "errno: " << errno;
 
     auto stator1 = LinuxByteIO::OpenFile(mut_filename);
-    ASSERT_TRUE(stator1.ok());
+    ASSERT_OK(stator1.status());
 
     LinuxByteIO writer = stator1.ConsumeValue();
 
     auto w = writer.Write('a');
-    EXPECT_TRUE(w.ok()) << w.ToString();
+    EXPECT_OK(w);
     w = writer.Write('b');
-    EXPECT_TRUE(w.ok()) << w.ToString();
+    EXPECT_OK(w);
     w = writer.Write('c');
-    EXPECT_TRUE(w.ok()) << w.ToString();
+    EXPECT_OK(w);
 
     auto stator2 = LinuxByteIO::OpenFile(mut_filename);
-    ASSERT_TRUE(stator2.ok());
+    ASSERT_OK(stator2.status());
 
     LinuxByteIO reader = stator2.ConsumeValue();
 
     auto r = reader.Read();
-    EXPECT_TRUE(r.ok());
-    EXPECT_EQ('a', r.Value()) << r.status().ToString();
+    EXPECT_OK(r.status());
+    EXPECT_EQ('a', r.Value());
 
     r = reader.Read();
-    EXPECT_TRUE(r.ok());
-    EXPECT_EQ('b', r.Value()) << r.status().ToString();
+    EXPECT_OK(r.status());
+    EXPECT_EQ('b', r.Value());
 
     r = reader.Read();
-    EXPECT_TRUE(r.ok());
-    EXPECT_EQ('c', r.Value()) << r.status().ToString();
+    EXPECT_OK(r.status());
+    EXPECT_EQ('c', r.Value());
 
     r = reader.Read();
-    EXPECT_FALSE(r.ok());
+    EXPECT_NOT_OK(r.status());
     EXPECT_EQ(util::error::Code::RESOURCE_EXHAUSTED, r.status().error_code());
 }

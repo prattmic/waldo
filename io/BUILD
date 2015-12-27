@@ -21,8 +21,9 @@ cc_test(
     srcs = ["linux_byteio_test.cc"],
     deps = [
         ":linux_byteio",
+        "//util:status_test",
         "@googletest//:gtest",
-        "@googletest//:gtest_main",
+        "@googletest//:gmock_main",
     ],
 )
 
@@ -42,7 +43,8 @@ cc_test(
     deps = [
         ":linux_byteio",
         ":logging_byteio",
+        "//util:status_test",
         "@googletest//:gtest",
-        "@googletest//:gtest_main",
+        "@googletest//:gmock_main",
     ],
 )

@@ -51,3 +51,47 @@ cc_library(
     deps = [":gtest"],
     visibility = ["//visibility:public"],
 )
+
+cc_library(
+    name = "gmock",
+    srcs = [
+        "googlemock/src/gmock-cardinalities.cc",
+        "googlemock/src/gmock-internal-utils.cc",
+        "googlemock/src/gmock-matchers.cc",
+        "googlemock/src/gmock-spec-builders.cc",
+        "googlemock/src/gmock.cc",
+        "googlemock/include/gmock/gmock-actions.h",
+        "googlemock/include/gmock/gmock-cardinalities.h",
+        "googlemock/include/gmock/gmock-generated-actions.h",
+        "googlemock/include/gmock/gmock-generated-function-mockers.h",
+        "googlemock/include/gmock/gmock-generated-matchers.h",
+        "googlemock/include/gmock/gmock-generated-nice-strict.h",
+        "googlemock/include/gmock/gmock-matchers.h",
+        "googlemock/include/gmock/gmock-more-actions.h",
+        "googlemock/include/gmock/gmock-more-matchers.h",
+        "googlemock/include/gmock/gmock-spec-builders.h",
+        "googlemock/include/gmock/internal/gmock-generated-internal-utils.h",
+        "googlemock/include/gmock/internal/gmock-internal-utils.h",
+        "googlemock/include/gmock/internal/gmock-port.h",
+        "googlemock/include/gmock/internal/custom/gmock-generated-actions.h",
+        "googlemock/include/gmock/internal/custom/gmock-matchers.h",
+        "googlemock/include/gmock/internal/custom/gmock-port.h",
+    ],
+    hdrs = [
+        "googlemock/include/gmock/gmock.h",
+    ],
+    includes = [
+        "googlemock/",
+        "googlemock/include",
+        "googletest/include/",
+    ],
+    deps = [":gtest"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "gmock_main",
+    srcs = ["googlemock/src/gmock_main.cc"],
+    deps = [":gmock"],
+    visibility = ["//visibility:public"],
+)

@@ -9,17 +9,19 @@
 #include "io/logging_byteio.h"
 #include "sim808/gns.h"
 #include "sim808/sim808.h"
+#include "util/status_test.h"
 
 using io::ByteIO;
 using io::LinuxByteIO;
 using io::LoggingByteIO;
 using sim808::SIM808;
+using testing::IsOK;
 
 class SIM808Test : public ::testing::Test {
  protected:
     virtual void SetUp() {
         auto statusor = LinuxByteIO::OpenFile("/dev/ttyACM0");
-        ASSERT_TRUE(statusor.ok()) << statusor.status().ToString();
+        ASSERT_OK(statusor.status());
         auto sim_io = std::unique_ptr<ByteIO>(
             new LinuxByteIO(statusor.ConsumeValue()));
 
@@ -39,25 +41,25 @@ class SIM808Test : public ::testing::Test {
 
 TEST_F(SIM808Test, Connect) {
     auto status = sim_.Initialize();
-    EXPECT_TRUE(status.ok()) << status.error_message();
+    EXPECT_OK(status);
 }
 
 TEST_F(SIM808Test, GNSEnable) {
     auto status = sim_.Initialize();
-    ASSERT_TRUE(status.ok()) << status.error_message();
+    ASSERT_OK(status);
 
     status = sim_.GNSEnable(false);
-    ASSERT_TRUE(status.ok()) << status.error_message();
+    ASSERT_OK(status);
 
     auto statusor = sim_.GNSEnabled();
-    ASSERT_TRUE(statusor.ok()) << statusor.status().error_message();
+    ASSERT_OK(statusor.status());
     EXPECT_FALSE(statusor.Value());
 
     status = sim_.GNSEnable(true);
-    ASSERT_TRUE(status.ok()) << status.error_message();
+    ASSERT_OK(status);
 
     statusor = sim_.GNSEnabled();
-    ASSERT_TRUE(statusor.ok()) << statusor.status().error_message();
+    ASSERT_OK(statusor.status());
     EXPECT_TRUE(statusor.Value());
 
     status = sim_.GNSEnable(false);
@@ -66,10 +68,10 @@ TEST_F(SIM808Test, GNSEnable) {
 
 TEST_F(SIM808Test, GNSInfo) {
     auto status = sim_.Initialize();
-    ASSERT_TRUE(status.ok()) << status.error_message();
+    ASSERT_OK(status);
 
     status = sim_.GNSEnable(true);
-    ASSERT_TRUE(status.ok()) << status.error_message();
+    ASSERT_OK(status);
 
     struct sim808::GNSInfo info;
     memset(&info, 0, sizeof(info));
@@ -80,7 +82,7 @@ TEST_F(SIM808Test, GNSInfo) {
     } while (!status.ok() &&
              status.error_code() == ::util::error::Code::UNAVAILABLE);
 
-    ASSERT_TRUE(status.ok()) << status.error_message();
+    ASSERT_OK(status);
 
     std::cerr << "Fix: "                  << info.fix << "\n";
     std::cerr << "Year: "                 << info.year << "\n";
