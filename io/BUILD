@@ -48,3 +48,23 @@ cc_test(
         "@googletest//:gmock_main",
     ],
 )
+
+cc_library(
+    name = "byteio_streambuf",
+    hdrs = ["byteio_streambuf.h"],
+    deps = [
+        ":byteio",
+    ],
+)
+
+cc_test(
+    name = "byteio_streambuf_test",
+    srcs = ["byteio_streambuf_test.cc"],
+    deps = [
+        ":byteio_streambuf",
+        ":linux_byteio",
+        "//util:status_test",
+        "@googletest//:gtest",
+        "@googletest//:gmock_main",
+    ],
+)
