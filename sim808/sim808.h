@@ -7,6 +7,7 @@
 #include "external/nanopb/util/task/status.h"
 #include "external/nanopb/util/task/statusor.h"
 #include "io/byteio.h"
+#include "sim808/gns.h"
 
 namespace sim808 {
 
@@ -26,6 +27,10 @@ class SIM808 {
 
     // Enable/disable GNS module.
     Status GNSEnable(bool enable);
+
+    // Read current GNS info. Return UNAVAILABLE if the module is not yet
+    // ready.
+    Status GNSInfo(struct GNSInfo *info);
 
  private:
     // Send a command and with a fixed expected response.

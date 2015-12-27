@@ -1,10 +1,13 @@
 cc_library(
     name = "sim808",
     srcs = [
+        "gns.cc",
         "sim808_core.cc",
-        "sim808_commands.cc",
     ],
-    hdrs = ["sim808.h"],
+    hdrs = [
+        "gns.h",
+        "sim808.h",
+    ],
     deps = [
         "//io:byteio",
         "@nanopb//util/task:status",

@@ -7,6 +7,7 @@
 #include "external/nanopb/util/task/status.h"
 #include "io/linux_byteio.h"
 #include "io/logging_byteio.h"
+#include "sim808/gns.h"
 #include "sim808/sim808.h"
 
 using io::ByteIO;
@@ -61,4 +62,39 @@ TEST_F(SIM808Test, GNSEnable) {
 
     status = sim_.GNSEnable(false);
     EXPECT_TRUE(status.ok()) << status.error_message();
+}
+
+TEST_F(SIM808Test, GNSInfo) {
+    auto status = sim_.Initialize();
+    ASSERT_TRUE(status.ok()) << status.error_message();
+
+    status = sim_.GNSEnable(true);
+    ASSERT_TRUE(status.ok()) << status.error_message();
+
+    struct sim808::GNSInfo info;
+    memset(&info, 0, sizeof(info));
+
+    // Module takes a while to start up.
+    do {
+        status = sim_.GNSInfo(&info);
+    } while (!status.ok() &&
+             status.error_code() == ::util::error::Code::UNAVAILABLE);
+
+    ASSERT_TRUE(status.ok()) << status.error_message();
+
+    std::cerr << "Fix: "                  << info.fix << "\n";
+    std::cerr << "Year: "                 << info.year << "\n";
+    std::cerr << "Month: "                << info.month << "\n";
+    std::cerr << "Day: "                  << info.day << "\n";
+    std::cerr << "Hour: "                 << info.hour << "\n";
+    std::cerr << "Minute: "               << info.minute << "\n";
+    std::cerr << "Second: "               << info.second << "\n";
+    std::cerr << "Latitude: "             << info.latitude << "\n";
+    std::cerr << "Longitude: "            << info.longitude << "\n";
+    std::cerr << "Altitude: "             << info.altitude << "\n";
+    std::cerr << "Ground speed: "         << info.ground_speed << "\n";
+    std::cerr << "Heading: "              << info.heading << "\n";
+    std::cerr << "GPS sats in view: "     << info.gps_sats_in_view << "\n";
+    std::cerr << "GLONASS sats in view: " << info.glonass_sats_in_view << "\n";
+    std::cerr << "Sats in use: "          << info.sats_in_use << "\n";
 }
