@@ -7,6 +7,7 @@
 #include "external/nanopb/util/task/status.h"
 #include "io/linux_byteio.h"
 #include "io/logging_byteio.h"
+#include "log/log.h"
 #include "sim808/gns.h"
 #include "sim808/sim808.h"
 #include "util/status_test.h"
@@ -29,9 +30,10 @@ class SIM808Test : public ::testing::Test {
         ASSERT_GE(log_fd, 0);
 
         auto log_io = std::unique_ptr<ByteIO>(new LinuxByteIO(log_fd));
+        logging::SetupLogger(std::move(log_io));
 
         auto io = std::unique_ptr<ByteIO>(
-            new LoggingByteIO(std::move(sim_io), std::move(log_io)));
+            new LoggingByteIO(std::move(sim_io)));
 
         sim_ = SIM808(std::move(io));
     }

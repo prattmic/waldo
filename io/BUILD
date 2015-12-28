@@ -32,6 +32,7 @@ cc_library(
     hdrs = ["logging_byteio.h"],
     deps = [
         ":byteio",
+        "//log",
         "//util:string",
         "@nanopb//util/task:status",
     ],
@@ -43,6 +44,7 @@ cc_test(
     deps = [
         ":linux_byteio",
         ":logging_byteio",
+        "//log",
         "//util:status_test",
         "@googletest//:gtest",
         "@googletest//:gmock_main",

@@ -6,6 +6,7 @@
 #include "external/nanopb/util/task/status.h"
 #include "io/linux_byteio.h"
 #include "io/logging_byteio.h"
+#include "log/log.h"
 #include "util/status_test.h"
 
 using io::ByteIO;
@@ -19,9 +20,11 @@ TEST(LoggingByteIOTest, Write) {
     int log_fds[2];
     ASSERT_EQ(0, pipe(log_fds));
 
-    auto io = std::unique_ptr<ByteIO>(new LinuxByteIO(io_fds[1]));
     auto log = std::unique_ptr<ByteIO>(new LinuxByteIO(log_fds[1]));
-    auto logging_io = LoggingByteIO(std::move(io), std::move(log));
+    logging::SetupLogger(std::move(log));
+
+    auto io = std::unique_ptr<ByteIO>(new LinuxByteIO(io_fds[1]));
+    auto logging_io = LoggingByteIO(std::move(io));
 
     auto read_io = LinuxByteIO(io_fds[0]);
     auto read_log = LinuxByteIO(log_fds[0]);
@@ -33,7 +36,7 @@ TEST(LoggingByteIOTest, Write) {
     EXPECT_OK(statusor.status());
     EXPECT_EQ('A', statusor.Value());
 
-    const char expected_log[] = "Writing: 'A'\n";
+    const char expected_log[] = "INFO: Writing: 'A'\n";
     for (size_t i = 0; i < sizeof(expected_log)-1; i++) {
         auto statusor = read_log.Read();
         EXPECT_OK(statusor.status());
@@ -48,9 +51,11 @@ TEST(LoggingByteIOTest, Read) {
     int log_fds[2];
     ASSERT_EQ(0, pipe(log_fds));
 
-    auto io = std::unique_ptr<ByteIO>(new LinuxByteIO(io_fds[0]));
     auto log = std::unique_ptr<ByteIO>(new LinuxByteIO(log_fds[1]));
-    auto logging_io = LoggingByteIO(std::move(io), std::move(log));
+    logging::SetupLogger(std::move(log));
+
+    auto io = std::unique_ptr<ByteIO>(new LinuxByteIO(io_fds[0]));
+    auto logging_io = LoggingByteIO(std::move(io));
 
     auto write_io = LinuxByteIO(io_fds[1]);
     auto read_log = LinuxByteIO(log_fds[0]);
@@ -62,7 +67,7 @@ TEST(LoggingByteIOTest, Read) {
     EXPECT_OK(statusor.status());
     EXPECT_EQ('A', statusor.Value());
 
-    const char expected_log[] = "Read: 'A'\n";
+    const char expected_log[] = "INFO: Read: 'A'\n";
     for (size_t i = 0; i < sizeof(expected_log)-1; i++) {
         auto statusor = read_log.Read();
         EXPECT_OK(statusor.status());

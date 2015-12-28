@@ -21,6 +21,7 @@ cc_test(
         ":sim808",
         "//io:linux_byteio",
         "//io:logging_byteio",
+        "//log",
         "//util:status_test",
         "@googletest//:gtest",
         "@googletest//:gmock_main",
