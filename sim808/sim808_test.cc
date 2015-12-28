@@ -1,6 +1,5 @@
 #include <fcntl.h>
 #include <unistd.h>
-#include <iostream>
 #include <memory>
 #include <utility>
 #include "external/googletest/googletest/include/gtest/gtest.h"
@@ -86,19 +85,19 @@ TEST_F(SIM808Test, GNSInfo) {
 
     ASSERT_OK(status);
 
-    std::cerr << "Fix: "                  << info.fix << "\n";
-    std::cerr << "Year: "                 << info.year << "\n";
-    std::cerr << "Month: "                << info.month << "\n";
-    std::cerr << "Day: "                  << info.day << "\n";
-    std::cerr << "Hour: "                 << info.hour << "\n";
-    std::cerr << "Minute: "               << info.minute << "\n";
-    std::cerr << "Second: "               << info.second << "\n";
-    std::cerr << "Latitude: "             << info.latitude << "\n";
-    std::cerr << "Longitude: "            << info.longitude << "\n";
-    std::cerr << "Altitude: "             << info.altitude << "\n";
-    std::cerr << "Ground speed: "         << info.ground_speed << "\n";
-    std::cerr << "Heading: "              << info.heading << "\n";
-    std::cerr << "GPS sats in view: "     << info.gps_sats_in_view << "\n";
-    std::cerr << "GLONASS sats in view: " << info.glonass_sats_in_view << "\n";
-    std::cerr << "Sats in use: "          << info.sats_in_use << "\n";
+    LOG(INFO) << "Fix: "                  << info.fix;
+    LOG(INFO) << "Year: "                 << info.year;
+    LOG(INFO) << "Month: "                << info.month;
+    LOG(INFO) << "Day: "                  << info.day;
+    LOG(INFO) << "Hour: "                 << info.hour;
+    LOG(INFO) << "Minute: "               << info.minute;
+    LOG(INFO) << "Second: "               << info.second;
+    LOG(INFO) << "Latitude: "             << info.latitude;
+    LOG(INFO) << "Longitude: "            << info.longitude;
+    LOG(INFO) << "Altitude: "             << info.altitude;
+    LOG(INFO) << "Ground speed: "         << info.ground_speed;
+    LOG(INFO) << "Heading: "              << info.heading;
+    LOG(INFO) << "GPS sats in view: "     << info.gps_sats_in_view;
+    LOG(INFO) << "GLONASS sats in view: " << info.glonass_sats_in_view;
+    LOG(INFO) << "Sats in use: "          << info.sats_in_use;
 }

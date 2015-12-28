@@ -5,8 +5,11 @@
 
 namespace util {
 
-// Convert int to string.
+// Convert uint32_t to string.
 char *uitoa(uint32_t number, char *buf, uint32_t len, uint32_t base);
+
+// Convert int32_t to string.
+char *itoa(int32_t number, char *buf, uint32_t len, uint32_t base);
 
 }  // namespace util
 

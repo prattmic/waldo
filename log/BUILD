@@ -6,6 +6,7 @@ cc_library(
     hdrs = ["log.h"],
     deps = [
         "//io:byteio",
+        "//util:string",
     ],
 )
 

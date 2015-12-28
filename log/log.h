@@ -1,9 +1,11 @@
 #ifndef LOG_LOG_H_
 #define LOG_LOG_H_
 
+#include <stdint.h>
 #include <memory>
 #include <utility>
 #include "io/byteio.h"
+#include "util/string.h"
 
 enum LogLevel {
     INFO,
@@ -32,10 +34,41 @@ class Logger {
             *internal::sink << "\n";
     }
 
-    template <typename T>
-    Logger& operator<<(T v) {
+    Logger& operator<<(const char *s) {
         if (internal::sink)
-            *internal::sink << v;
+            *internal::sink << s;
+        return *this;
+    }
+
+    Logger& operator<<(bool b) {
+        if (internal::sink) {
+            if (b)
+                *internal::sink << "true";
+            else
+                *internal::sink << "false";
+        }
+        return *this;
+    }
+
+    Logger& operator<<(uint32_t i) {
+        if (internal::sink) {
+            // Biggest uint32_t is 10 characters (base 10).
+            char buf[11];
+            ::util::uitoa(i, buf, 11, 10);
+
+            *internal::sink << buf;
+        }
+        return *this;
+    }
+
+    Logger& operator<<(int32_t i) {
+        if (internal::sink) {
+            // Biggest int32_t is 11 characters (base 10).
+            char buf[12];
+            ::util::itoa(i, buf, 12, 10);
+
+            *internal::sink << buf;
+        }
         return *this;
     }
 };
