@@ -101,3 +101,25 @@ TEST_F(SIM808Test, GNSInfo) {
     LOG(INFO) << "GLONASS sats in view: " << info.glonass_sats_in_view;
     LOG(INFO) << "Sats in use: "          << info.sats_in_use;
 }
+
+TEST_F(SIM808Test, GPRSEnable) {
+    auto status = sim_.Initialize();
+    ASSERT_OK(status);
+
+    // Try to disable. This may return an error if it is already disabled.
+    sim_.GPRSEnable(false);
+
+    auto statusor = sim_.GPRSEnabled();
+    ASSERT_OK(statusor.status());
+    EXPECT_FALSE(statusor.Value());
+
+    status = sim_.GPRSEnable(true);
+    ASSERT_OK(status);
+
+    statusor = sim_.GPRSEnabled();
+    ASSERT_OK(statusor.status());
+    EXPECT_TRUE(statusor.Value());
+
+    status = sim_.GPRSEnable(false);
+    EXPECT_TRUE(status.ok()) << status.error_message();
+}

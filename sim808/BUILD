@@ -2,6 +2,7 @@ cc_library(
     name = "sim808",
     srcs = [
         "gns.cc",
+        "http.cc",
         "sim808_core.cc",
     ],
     hdrs = [
@@ -10,6 +11,7 @@ cc_library(
     ],
     deps = [
         "//io:byteio",
+        "//log",
         "@nanopb//util/task:status",
     ],
 )

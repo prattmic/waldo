@@ -1,6 +1,7 @@
 #include <chrono>
 #include "external/nanopb/util/task/status.h"
 #include "external/nanopb/util/task/statusor.h"
+#include "log/log.h"
 #include "sim808/sim808.h"
 
 namespace sim808 {
@@ -24,6 +25,8 @@ void SIM808::TryConsumeLine(std::chrono::system_clock::time_point timeout) {
 
 Status SIM808::VerifyResponse(const char *expected,
                               std::chrono::system_clock::time_point timeout) {
+    LOG(INFO) << "Expecting response: " << expected;
+
     while (*expected) {
         if (std::chrono::system_clock::now() > timeout)
             return Status(::util::error::Code::DEADLINE_EXCEEDED, "timeout");
@@ -152,6 +155,8 @@ Status SIM808::SendSimpleCommand(const char *command, const char *response,
                                  std::chrono::milliseconds timeout) {
     auto end = std::chrono::system_clock::now() + timeout;
 
+    LOG(INFO) << "Sending command: " << command;
+
     auto status = WriteCommand(command, end);
     if (!status.ok()) {
         TryAbort();
@@ -171,32 +176,26 @@ Status SIM808::SendSimpleCommand(const char *command, const char *response,
     return VerifyResponse("\r\n", end);
 }
 
-StatusOr<size_t> SIM808::SendSynchronousCommand(
-        const char *command, const char *prefix, char *response,
-        size_t size, std::chrono::milliseconds timeout) {
-    auto end = std::chrono::system_clock::now() + timeout;
-
-    auto status = WriteCommand(command, end);
-    if (!status.ok()) {
-        TryAbort();
-        return status;
-    }
+StatusOr<size_t> SIM808::ReadResponse(
+        const char *prefix, char *response, size_t size,
+        std::chrono::system_clock::time_point timeout) {
+    LOG(INFO) << "Reading response for: " << prefix;
 
     // Preamble
-    status = VerifyResponse("\r\n", end);
+    auto status = VerifyResponse("\r\n", timeout);
     if (!status.ok())
         return status;
 
-    // Synchronous response start
-    status = VerifyResponse("+", end);
+    // Command-specific response start
+    status = VerifyResponse("+", timeout);
     if (!status.ok())
         return status;
 
-    status = VerifyResponse(prefix, end);
+    status = VerifyResponse(prefix, timeout);
     if (!status.ok())
         return status;
 
-    status = VerifyResponse(": ", end);
+    status = VerifyResponse(": ", timeout);
     if (!status.ok())
         return status;
 
@@ -228,10 +227,57 @@ StatusOr<size_t> SIM808::SendSynchronousCommand(
         }
     }
 
+    return total;
+}
+
+StatusOr<size_t> SIM808::SendSynchronousCommand(
+        const char *command, const char *prefix, char *response,
+        size_t size, std::chrono::milliseconds timeout) {
+    auto end = std::chrono::system_clock::now() + timeout;
+
+    auto status = WriteCommand(command, end);
+    if (!status.ok()) {
+        TryAbort();
+        return status;
+    }
+
+    // Command-specific response comes first.
+    auto statusor = ReadResponse(prefix, response, size, end);
+    if (!statusor.ok())
+        return statusor;
+
+    auto total = statusor.Value();
+
     // Everything is A-OK?
     status = VerifyResponse("\n\r\nOK\r\n", end);
     if (!status.ok())
         return status;
+
+    return total;
+}
+
+StatusOr<size_t> SIM808::SendAsynchronousCommand(
+        const char *command, const char *prefix, char *response,
+        size_t size, std::chrono::milliseconds timeout) {
+    auto end = std::chrono::system_clock::now() + timeout;
+
+    auto status = WriteCommand(command, end);
+    if (!status.ok()) {
+        TryAbort();
+        return status;
+    }
+
+    // Everything is A-OK?
+    status = VerifyResponse("\n\r\nOK\r\n", end);
+    if (!status.ok())
+        return status;
+
+    // Command-specific response comes second.
+    auto statusor = ReadResponse(prefix, response, size, end);
+    if (!statusor.ok())
+        return statusor;
+
+    auto total = statusor.Value();
 
     return total;
 }
