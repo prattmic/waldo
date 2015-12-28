@@ -14,7 +14,7 @@ constexpr size_t kSAPBRQueryMax = 22;
 constexpr char kBearerStatusConnected = '1';
 
 StatusOr<bool> SIM808::GPRSEnabled() {
-    char response[kSAPBRQueryMax] = { '\0' };
+    char response[kSAPBRQueryMax+1] = { '\0' };
     auto statusor = SendSynchronousCommand("AT+SAPBR=2,1", "SAPBR",
                                            response, kSAPBRQueryMax,
                                            std::chrono::milliseconds(100));
