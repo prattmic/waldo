@@ -79,6 +79,11 @@ class ByteIO {
 
         return WriteString(s, end);
     }
+
+    ByteIO& operator<<(const char *s) {
+        WriteString(s);
+        return *this;
+    }
 };
 
 }  // namespace io
