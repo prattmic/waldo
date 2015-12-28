@@ -9,18 +9,18 @@
 using io::ByteIO;
 using io::LinuxByteIO;
 
-TEST(LogTest, Write) {
+TEST(LogTest, String) {
     int io_fds[2];
     ASSERT_EQ(0, pipe(io_fds));
 
     auto io = std::unique_ptr<ByteIO>(new LinuxByteIO(io_fds[1]));
     logging::SetupLogger(std::move(io));
 
-    LOG(INFO) << "Hello\n";
+    LOG(INFO) << "Hello" << " World";
 
     auto read_io = LinuxByteIO(io_fds[0]);
 
-    const char expected_log[] = "INFO: Hello\n";
+    const char expected_log[] = "INFO: Hello World\n";
     for (size_t i = 0; i < sizeof(expected_log)-1; i++) {
         auto statusor = read_io.Read();
         EXPECT_OK(statusor.status());

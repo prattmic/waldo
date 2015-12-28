@@ -13,31 +13,39 @@ enum LogLevel {
 
 namespace logging {
 
+namespace internal {
+
+extern std::unique_ptr<io::ByteIO> sink;
+extern const char *levels[];
+
+}  // namespace internal
+
 class Logger {
  public:
-    Logger() : io_(nullptr) {}
+    Logger(LogLevel l) {
+        if (internal::sink)
+            *internal::sink << internal::levels[l] << ": ";
+    }
 
-    Logger(std::unique_ptr<io::ByteIO> io) : io_(std::move(io)) {}
-
-    void setup(std::unique_ptr<io::ByteIO> io) {
-        io_ = std::move(io);
+    ~Logger() {
+        if (internal::sink)
+            *internal::sink << "\n";
     }
 
     template <typename T>
     Logger& operator<<(T v) {
-        if (io_ != nullptr)
-            *io_ << v;
+        if (internal::sink)
+            *internal::sink << v;
         return *this;
     }
-
- private:
-    std::unique_ptr<io::ByteIO> io_;
 };
 
 extern void SetupLogger(std::unique_ptr<io::ByteIO> io);
 
 }  // namespace logging
 
-extern logging::Logger& LOG(LogLevel l);
+inline logging::Logger LOG(LogLevel l) {
+    return logging::Logger(l);
+}
 
 #endif  // LOG_LOG_H_

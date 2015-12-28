@@ -5,22 +5,20 @@
 
 namespace logging {
 
-static Logger global_logger;
+namespace internal {
 
-void SetupLogger(std::unique_ptr<io::ByteIO> io) {
-    global_logger.setup(std::move(io));
-}
+std::unique_ptr<io::ByteIO> sink;
 
-}  // namespace logging
-
-static const char *level_str[] = {
+const char *levels[] = {
     [INFO] = "INFO",
     [WARNING] = "WARNING",
     [ERROR] = "ERROR",
 };
 
-logging::Logger& LOG(LogLevel l) {
-    logging::global_logger << level_str[l] << ": ";
+}  // namespace internal
 
-    return logging::global_logger;
+void SetupLogger(std::unique_ptr<io::ByteIO> io) {
+    logging::internal::sink = std::move(io);
 }
+
+}  // namespace logging
