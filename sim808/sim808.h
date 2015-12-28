@@ -60,6 +60,10 @@ class SIM808 {
     Status WriteCommand(const char *command,
                         std::chrono::system_clock::time_point timeout);
 
+    // Try to consume the rest of the line (up to '\n') to keep future
+    // readers from choking on it. No promises, though.
+    void TryConsumeLine(std::chrono::system_clock::time_point timeout);
+
     Status VerifyResponse(const char *expected,
                           std::chrono::system_clock::time_point timeout);
 

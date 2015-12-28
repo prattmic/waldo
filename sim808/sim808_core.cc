@@ -5,6 +5,23 @@
 
 namespace sim808 {
 
+void SIM808::TryConsumeLine(std::chrono::system_clock::time_point timeout) {
+    while (std::chrono::system_clock::now() < timeout) {
+        auto statusor = io_->Read();
+        if (!statusor.ok()) {
+            // Would block. retry.
+            if (statusor.status().error_code() ==
+                ::util::error::Code::RESOURCE_EXHAUSTED)
+                continue;
+
+            return;
+        }
+
+        if (statusor.Value() == '\n')
+            return;
+    }
+}
+
 Status SIM808::VerifyResponse(const char *expected,
                               std::chrono::system_clock::time_point timeout) {
     while (*expected) {
@@ -21,8 +38,13 @@ Status SIM808::VerifyResponse(const char *expected,
             return statusor.status();
         }
 
-        if (statusor.Value() != *expected)
+        if (statusor.Value() != *expected) {
+            // Try to consume the rest of this line (probably ERROR), so the
+            // next reader doesn't choke on it.
+            if (statusor.Value() != '\n')
+                TryConsumeLine(timeout);
             return Status(::util::error::Code::UNKNOWN, "unexpected response");
+        }
 
         expected++;
     }
