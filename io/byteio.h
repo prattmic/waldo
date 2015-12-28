@@ -55,7 +55,7 @@ class ByteIO {
             status = Write(*s);
             if (!status.ok()) {
                 // Would block. retry.
-                if (status.error_code() !=
+                if (status.error_code() ==
                     ::util::error::Code::RESOURCE_EXHAUSTED)
                     continue;
 

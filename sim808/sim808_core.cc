@@ -113,7 +113,7 @@ Status SIM808::WriteCommand(const char *command,
         auto status = io_->Write('\r');
         if (!status.ok()) {
             // Would block. retry.
-            if (status.error_code() !=
+            if (status.error_code() ==
                 ::util::error::Code::RESOURCE_EXHAUSTED)
                 continue;
 
