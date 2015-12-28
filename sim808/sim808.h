@@ -8,6 +8,7 @@
 #include "external/nanopb/util/task/statusor.h"
 #include "io/byteio.h"
 #include "sim808/gns.h"
+#include "sim808/http.h"
 
 namespace sim808 {
 
@@ -39,10 +40,20 @@ class SIM808 {
     // enabled/disabled.
     Status GPRSEnable(bool enable);
 
+    // Make an HTTP GET request. If successful, the response body can
+    // be read with HTTPRead.
+    StatusOr<HTTPResponseStatus> HTTPGet(const char *uri);
+
  private:
     // Send a command and with a fixed expected response.
     Status SendSimpleCommand(const char *command, const char *response,
                              std::chrono::milliseconds timeout);
+
+    // Same as SendSimpleCommand, but with WriteParameterizedCommand
+    // semantics.
+    Status SendSimpleParameterizedCommand(
+            const char *command, char delimiter, const char *param,
+            const char *response, std::chrono::milliseconds timeout);
 
     // Read a command-specific response in the form:
     // +prefix: <this goes in response>
@@ -95,6 +106,13 @@ class SIM808 {
     // Write command, adding trailing \r.
     Status WriteCommand(const char *command,
                         std::chrono::system_clock::time_point timeout);
+
+    // Write command, adding trailing \r, with an optional parameter. If
+    // delimiter and param are set, all instances of delimiter is replaced with
+    // param.
+    Status WriteParameterizedCommand(
+            const char *command, char delimiter, const char *param,
+            std::chrono::system_clock::time_point timeout);
 
     // Try to consume the rest of the line (up to '\n') to keep future
     // readers from choking on it. No promises, though.

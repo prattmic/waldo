@@ -7,6 +7,7 @@ cc_library(
     ],
     hdrs = [
         "gns.h",
+        "http.h",
         "sim808.h",
     ],
     deps = [

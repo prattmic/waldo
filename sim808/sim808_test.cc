@@ -123,3 +123,20 @@ TEST_F(SIM808Test, GPRSEnable) {
     status = sim_.GPRSEnable(false);
     EXPECT_TRUE(status.ok()) << status.error_message();
 }
+
+TEST_F(SIM808Test, HTTPGet) {
+    auto status = sim_.Initialize();
+    ASSERT_OK(status);
+
+    status = sim_.GPRSEnable(true);
+    ASSERT_OK(status);
+
+    auto statusor = sim_.HTTPGet("pratt.im/hello.txt");
+    ASSERT_OK(statusor.status());
+    auto resp_status = statusor.Value();
+    EXPECT_EQ(200, resp_status.code);
+    EXPECT_EQ(6ull, resp_status.bytes);
+
+    status = sim_.GPRSEnable(false);
+    EXPECT_TRUE(status.ok()) << status.error_message();
+}

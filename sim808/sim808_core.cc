@@ -124,40 +124,67 @@ Status SIM808::Initialize() {
     return DisableCommandEcho();
 }
 
-Status SIM808::WriteCommand(const char *command,
-                            std::chrono::system_clock::time_point timeout) {
-    auto statusor = io_->WriteString(command, timeout);
-    if (!statusor.ok()) {
+Status SIM808::WriteParameterizedCommand(
+        const char *command, char delimiter, const char *param,
+        std::chrono::system_clock::time_point timeout) {
+    if ((delimiter && !param) || (!delimiter && param)) {
+        return Status(::util::error::Code::FAILED_PRECONDITION,
+                      "none or both of delimiter and param must be set");
+    }
+
+    if (!delimiter) {
+        // No parameter, just write the whole thing.
+        auto statusor = io_->WriteString(command, timeout);
+        if (!statusor.ok())
+            return statusor.status();
+
+        statusor = io_->WriteString("\r", timeout);
         return statusor.status();
     }
 
-    while (1) {
+    // Parameter, write out byte-by-byte until we get to the delimiter.
+    const char *s = command;
+    while (*s) {
         if (std::chrono::system_clock::now() > timeout)
             return Status(::util::error::Code::DEADLINE_EXCEEDED, "timeout");
 
-        auto status = io_->Write('\r');
-        if (!status.ok()) {
-            // Would block. retry.
-            if (status.error_code() ==
-                ::util::error::Code::RESOURCE_EXHAUSTED)
-                continue;
+        if (*s == delimiter) {
+            // Found the delimiter, write out the param instead.
+            auto statusor = io_->WriteString(param, timeout);
+            if (!statusor.ok())
+                return statusor.status();
+        } else {
+            auto status = io_->Write(*s);
+            if (!status.ok()) {
+                // Would block. retry.
+                if (status.error_code() ==
+                        ::util::error::Code::RESOURCE_EXHAUSTED)
+                    continue;
 
-            return status;
+                return status;
+            }
         }
 
-        break;
+        s++;
     }
 
-    return Status::OK;
+    auto statusor = io_->WriteString("\r", timeout);
+    return statusor.status();
 }
 
-Status SIM808::SendSimpleCommand(const char *command, const char *response,
-                                 std::chrono::milliseconds timeout) {
+Status SIM808::WriteCommand(const char *command,
+                            std::chrono::system_clock::time_point timeout) {
+    return WriteParameterizedCommand(command, 0, nullptr, timeout);
+}
+
+Status SIM808::SendSimpleParameterizedCommand(
+        const char *command, char delimiter, const char *param,
+        const char *response, std::chrono::milliseconds timeout) {
     auto end = std::chrono::system_clock::now() + timeout;
 
     LOG(INFO) << "Sending command: " << command;
 
-    auto status = WriteCommand(command, end);
+    auto status = WriteParameterizedCommand(command, delimiter, param, end);
     if (!status.ok()) {
         TryAbort();
         return status;
@@ -174,6 +201,12 @@ Status SIM808::SendSimpleCommand(const char *command, const char *response,
 
     // Termination
     return VerifyResponse("\r\n", end);
+}
+
+Status SIM808::SendSimpleCommand(const char *command, const char *response,
+                                 std::chrono::milliseconds timeout) {
+    return SendSimpleParameterizedCommand(command, 0, nullptr, response,
+                                          timeout);
 }
 
 StatusOr<size_t> SIM808::ReadResponse(
@@ -268,7 +301,7 @@ StatusOr<size_t> SIM808::SendAsynchronousCommand(
     }
 
     // Everything is A-OK?
-    status = VerifyResponse("\n\r\nOK\r\n", end);
+    status = VerifyResponse("\r\nOK\r\n", end);
     if (!status.ok())
         return status;
 
@@ -278,6 +311,11 @@ StatusOr<size_t> SIM808::SendAsynchronousCommand(
         return statusor;
 
     auto total = statusor.Value();
+
+    // Final newline.
+    status = VerifyResponse("\n", end);
+    if (!status.ok())
+        return status;
 
     return total;
 }
