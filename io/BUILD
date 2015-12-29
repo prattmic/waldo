@@ -70,3 +70,12 @@ cc_test(
         "@googletest//:gmock_main",
     ],
 )
+
+cc_library(
+    name = "null_byteio",
+    hdrs = ["null_byteio.h"],
+    deps = [
+        ":byteio",
+        "@nanopb//util/task:status",
+    ],
+)

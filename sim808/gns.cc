@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <chrono>
 #include "external/nanopb/util/task/status.h"

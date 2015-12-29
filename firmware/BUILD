@@ -10,7 +10,12 @@ nanopb_cpp_library(
 efm32_binary(
     name = "firmware",
     srcs = ["firmware.cc"],
-    deps = [":simple"],
+    deps = [
+        ":simple",
+        "//io:byteio",
+        "//io:null_byteio",
+        "//sim808",
+    ],
 )
 
 raw_binary(
