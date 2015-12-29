@@ -235,10 +235,13 @@ StatusOr<size_t> SIM808::ReadResponse(
     // Response content
     size_t total = 0;
     while (1) {
+        if (std::chrono::system_clock::now() > timeout)
+            return Status(::util::error::Code::DEADLINE_EXCEEDED, "timeout");
+
         auto statusor = io_->Read();
         if (!statusor.ok()) {
             // Would block. retry.
-            if (statusor.status().error_code() !=
+            if (statusor.status().error_code() ==
                 ::util::error::Code::RESOURCE_EXHAUSTED)
                 continue;
 
