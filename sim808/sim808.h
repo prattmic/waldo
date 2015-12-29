@@ -136,6 +136,9 @@ class SIM808 {
     Status InitAutoBaud();
     Status DisableCommandEcho();
 
+    // Prepare an HTTP request to uri.
+    Status HTTPRequestSetup(const char *uri);
+
     // Command module to actually perform GET/POST/etc.
     StatusOr<HTTPResponseStatus> HTTPAction(HTTPMethod action);
 

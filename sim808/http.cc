@@ -71,6 +71,17 @@ Status SIM808::HTTPEnable(bool enable) {
                                  std::chrono::milliseconds(100));
 }
 
+Status SIM808::HTTPRequestSetup(const char *uri) {
+    auto status = SendSimpleCommand("AT+HTTPPARA=\"CID\",1", "OK",
+                                    std::chrono::milliseconds(100));
+    if (!status.ok())
+        return status;
+
+    return SendSimpleParameterizedCommand("AT+HTTPPARA=\"URL\",\"%\"",
+                                          '%', uri, "OK",
+                                          std::chrono::milliseconds(100));
+}
+
 StatusOr<HTTPResponseStatus> SIM808::HTTPAction(HTTPMethod method) {
     const char *command;
 
@@ -120,14 +131,7 @@ StatusOr<HTTPResponseStatus> SIM808::HTTPAction(HTTPMethod method) {
 }
 
 StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
-    auto status = SendSimpleCommand("AT+HTTPPARA=\"CID\",1", "OK",
-                                    std::chrono::milliseconds(100));
-    if (!status.ok())
-        return status;
-
-    status = SendSimpleParameterizedCommand(
-            "AT+HTTPPARA=\"URL\",\"%\"", '%', uri, "OK",
-            std::chrono::milliseconds(100));
+    auto status = HTTPRequestSetup(uri);
     if (!status.ok())
         return status;
 
