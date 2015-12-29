@@ -71,20 +71,26 @@ Status SIM808::HTTPEnable(bool enable) {
                                  std::chrono::milliseconds(100));
 }
 
-StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
-    auto status = SendSimpleCommand("AT+HTTPPARA=\"CID\",1", "OK",
-                                    std::chrono::milliseconds(100));
-    if (!status.ok())
-        return status;
+StatusOr<HTTPResponseStatus> SIM808::HTTPAction(HTTPMethod method) {
+    const char *command;
 
-    status = SendSimpleParameterizedCommand(
-            "AT+HTTPPARA=\"URL\",\"%\"", '%', uri, "OK",
-            std::chrono::milliseconds(100));
-    if (!status.ok())
-        return status;
+    switch (method) {
+    case GET:
+        command = "AT+HTTPACTION=0";
+        break;
+    case POST:
+        command = "AT+HTTPACTION=1";
+        break;
+    case HEAD:
+        command = "AT+HTTPACTION=2";
+        break;
+    default:
+        return Status(::util::error::Code::FAILED_PRECONDITION,
+                      "Uknown HTTPAction");
+    }
 
     char response[kHTTPACTIONRespMax+1] = { '\0' };
-    auto statusor = SendAsynchronousCommand("AT+HTTPACTION=0", "HTTPACTION",
+    auto statusor = SendAsynchronousCommand(command, "HTTPACTION",
                                            response, kHTTPACTIONRespMax,
                                            std::chrono::milliseconds(30000));
     if (!statusor.ok())
@@ -97,7 +103,7 @@ StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
 
     char *str = response;
 
-    // HTTP method (ignored, it's GET)
+    // HTTP method (ignored)
     char *field = strsep(&str, ",");
 
     // Status code
@@ -111,6 +117,21 @@ StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
         resp_status.bytes = strtoul(field, nullptr, 10);
 
     return resp_status;
+}
+
+StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
+    auto status = SendSimpleCommand("AT+HTTPPARA=\"CID\",1", "OK",
+                                    std::chrono::milliseconds(100));
+    if (!status.ok())
+        return status;
+
+    status = SendSimpleParameterizedCommand(
+            "AT+HTTPPARA=\"URL\",\"%\"", '%', uri, "OK",
+            std::chrono::milliseconds(100));
+    if (!status.ok())
+        return status;
+
+    return HTTPAction(GET);
 }
 
 StatusOr<size_t> SIM808::HTTPRead(char *response, size_t size) {

@@ -5,6 +5,12 @@
 
 namespace sim808 {
 
+enum HTTPMethod {
+    GET,
+    POST,
+    HEAD,
+};
+
 struct HTTPResponseStatus {
     // HTTP response code.
     int code;

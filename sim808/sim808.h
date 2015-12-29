@@ -136,6 +136,9 @@ class SIM808 {
     Status InitAutoBaud();
     Status DisableCommandEcho();
 
+    // Command module to actually perform GET/POST/etc.
+    StatusOr<HTTPResponseStatus> HTTPAction(HTTPMethod action);
+
     std::unique_ptr<io::ByteIO> io_;
 };
 
