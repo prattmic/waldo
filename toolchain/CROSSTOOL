@@ -54,4 +54,19 @@ toolchain {
   objcopy_embed_flag: "binary"
   tool_path { name: "objdump" path: "/usr/bin/arm-none-eabi-objdump" }
   tool_path { name: "strip" path: "/usr/bin/arm-none-eabi-strip" }
+
+  # Always enable debug symbols, since only raw binaries will be deployed
+  # anyways.
+  compiler_flag: "-g3"
+
+  compilation_mode_flags {
+    mode: OPT
+    # Optimize for size.
+    compiler_flag: "-Os"
+
+    # Removal of unused code and data at link time.
+    compiler_flag: "-ffunction-sections"
+    compiler_flag: "-fdata-sections"
+    linker_flag: "-Wl,--gc-sections"
+  }
 }
