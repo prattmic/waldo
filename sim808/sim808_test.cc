@@ -64,7 +64,7 @@ TEST_F(SIM808Test, GNSEnable) {
     EXPECT_TRUE(statusor.Value());
 
     status = sim_.GNSEnable(false);
-    EXPECT_TRUE(status.ok()) << status.error_message();
+    EXPECT_OK(status);
 }
 
 TEST_F(SIM808Test, GNSInfo) {
@@ -100,6 +100,9 @@ TEST_F(SIM808Test, GNSInfo) {
     LOG(INFO) << "GPS sats in view: "     << info.gps_sats_in_view;
     LOG(INFO) << "GLONASS sats in view: " << info.glonass_sats_in_view;
     LOG(INFO) << "Sats in use: "          << info.sats_in_use;
+
+    status = sim_.GNSEnable(false);
+    EXPECT_OK(status);
 }
 
 TEST_F(SIM808Test, GPRSEnable) {
@@ -121,14 +124,21 @@ TEST_F(SIM808Test, GPRSEnable) {
     EXPECT_TRUE(statusor.Value());
 
     status = sim_.GPRSEnable(false);
-    EXPECT_TRUE(status.ok()) << status.error_message();
+    EXPECT_OK(status);
 }
 
 TEST_F(SIM808Test, HTTPGet) {
     auto status = sim_.Initialize();
     ASSERT_OK(status);
 
+    // Try to disable. These may return an error already disabled.
+    sim_.HTTPEnable(false);
+    sim_.GPRSEnable(false);
+
     status = sim_.GPRSEnable(true);
+    ASSERT_OK(status);
+
+    status = sim_.HTTPEnable(true);
     ASSERT_OK(status);
 
     auto statusor = sim_.HTTPGet("pratt.im/hello.txt");
@@ -137,6 +147,9 @@ TEST_F(SIM808Test, HTTPGet) {
     EXPECT_EQ(200, resp_status.code);
     EXPECT_EQ(6ull, resp_status.bytes);
 
+    status = sim_.HTTPEnable(false);
+    EXPECT_OK(status);
+
     status = sim_.GPRSEnable(false);
-    EXPECT_TRUE(status.ok()) << status.error_message();
+    EXPECT_OK(status);
 }

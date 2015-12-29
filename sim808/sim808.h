@@ -37,8 +37,12 @@ class SIM808 {
     StatusOr<bool> GPRSEnabled();
 
     // Enable/disable GPRS connection. May return an error if already
-    // enabled/disabled.
+    // enabled/disabled. Must be enabled before making HTTP requests.
     Status GPRSEnable(bool enable);
+
+    // Enable/disable HTTP operation. Must be enabled before making HTTP
+    // requests. May return an error if already enabled/disabled.
+    Status HTTPEnable(bool enable);
 
     // Make an HTTP GET request. If successful, the response body can
     // be read with HTTPRead.

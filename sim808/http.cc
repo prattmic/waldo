@@ -57,15 +57,18 @@ Status SIM808::GPRSEnable(bool enable) {
     }
 }
 
-StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
-    auto status = SendSimpleCommand("AT+HTTPINIT", "OK",
-                                    std::chrono::milliseconds(100));
-    // FIXME(prattmic): we need to HTTPTERM when done.
-    //if (!status.ok())
-    //    return status;
+Status SIM808::HTTPEnable(bool enable) {
+    if (enable)
+        return SendSimpleCommand("AT+HTTPINIT", "OK",
+                                 std::chrono::milliseconds(100));
+    else
+        return SendSimpleCommand("AT+HTTPTERM", "OK",
+                                 std::chrono::milliseconds(100));
+}
 
-    status = SendSimpleCommand("AT+HTTPPARA=\"CID\",1", "OK",
-                               std::chrono::milliseconds(100));
+StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
+    auto status = SendSimpleCommand("AT+HTTPPARA=\"CID\",1", "OK",
+                                    std::chrono::milliseconds(100));
     if (!status.ok())
         return status;
 
