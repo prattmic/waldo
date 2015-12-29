@@ -141,11 +141,18 @@ TEST_F(SIM808Test, HTTPGet) {
     status = sim_.HTTPEnable(true);
     ASSERT_OK(status);
 
-    auto statusor = sim_.HTTPGet("pratt.im/hello.txt");
+    auto statusor = sim_.HTTPGet("http://pratt.im/hello.txt");
     ASSERT_OK(statusor.status());
     auto resp_status = statusor.Value();
     EXPECT_EQ(200, resp_status.code);
-    EXPECT_EQ(6ull, resp_status.bytes);
+    EXPECT_EQ(12ull, resp_status.bytes);
+
+    char buf[13] = { '\0' };
+
+    auto statusor2 = sim_.HTTPRead(buf, 12);
+    ASSERT_OK(statusor2.status());
+    EXPECT_EQ(12ull, statusor2.Value());
+    EXPECT_STREQ("hello\nworld\n", buf);
 
     status = sim_.HTTPEnable(false);
     EXPECT_OK(status);

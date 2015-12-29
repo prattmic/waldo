@@ -21,6 +21,11 @@ constexpr char kBearerStatusConnected = '1';
 // is received, but we do not support that.
 constexpr size_t kHTTPACTIONRespMax = 11;
 
+// Maximum response size for the first line of HTTPREAD, the response
+// size:
+// 99999 -> 5
+constexpr size_t kHTTPREADSizeMax = 5;
+
 StatusOr<bool> SIM808::GPRSEnabled() {
     char response[kSAPBRQueryMax+1] = { '\0' };
     auto statusor = SendSynchronousCommand("AT+SAPBR=2,1", "SAPBR",
@@ -106,6 +111,79 @@ StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
         resp_status.bytes = strtoul(field, nullptr, 10);
 
     return resp_status;
+}
+
+StatusOr<size_t> SIM808::HTTPRead(char *response, size_t size) {
+    // HTTPREAD has a special response format, so we handle it explicitly,
+    // rather than using one of the Send*Command functions.
+    //
+    // Response is in the form:
+    //
+    // +HTTPREAD: <bytes to read>
+    // multiple
+    // lines
+    // adding to
+    // <bytes to read>
+    //
+    // OK
+
+    auto end = std::chrono::system_clock::now()
+        + std::chrono::milliseconds(100);
+
+    auto status = WriteCommand("AT+HTTPREAD", end);
+    if (!status.ok()) {
+        TryAbort();
+        return status;
+    }
+
+    char data_len_buf[kHTTPREADSizeMax+1] = { '\0' };
+    auto statusor = ReadResponse("HTTPREAD", data_len_buf,
+                                 kHTTPREADSizeMax, end);
+    if (!statusor.ok())
+        return statusor.status();
+
+    size_t data_len = strtoull(data_len_buf, nullptr, 10);
+
+    // Eat the newline.
+    status = VerifyResponse("\n", end);
+    if (!status.ok())
+        return status;
+
+    // Response content
+    size_t total = 0;
+    while (data_len) {
+        if (std::chrono::system_clock::now() > end)
+            return Status(::util::error::Code::DEADLINE_EXCEEDED, "timeout");
+
+        auto statusor = io_->Read();
+        if (!statusor.ok()) {
+            // Would block. retry.
+            if (statusor.status().error_code() !=
+                ::util::error::Code::RESOURCE_EXHAUSTED)
+                continue;
+
+            return status;
+        }
+
+        char c = statusor.Value();
+
+        // We keep consuming the response even if there is no more room
+        // in the buffer, so we can see if the command itself was successful.
+        if (size > 0) {
+            *response++ = c;
+            total++;
+            size--;
+        }
+
+        data_len--;
+    }
+
+    // Everything is A-OK?
+    status = VerifyResponse("\r\nOK\r\n", end);
+    if (!status.ok())
+        return status;
+
+    return total;
 }
 
 }  // namespace sim808
