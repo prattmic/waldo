@@ -3,6 +3,7 @@
 #include "external/nanopb/util/task/status.h"
 #include "sim808/http.h"
 #include "sim808/sim808.h"
+#include "util/string.h"
 
 namespace sim808 {
 
@@ -15,16 +16,18 @@ constexpr size_t kSAPBRQueryMax = 22;
 // SAPBR query status 1 indicates that the bearer is connected.
 constexpr char kBearerStatusConnected = '1';
 
+// Maximum supported size of request/response body.
+// It could be larger, we just don't support that.
+constexpr size_t kHTTPDataMax = 99999;
+
 // Maximum response size for an HTTPACTION command:
 // 0,604,99999 -> 11
-// The response could be bigger than the above if more data
-// is received, but we do not support that.
 constexpr size_t kHTTPACTIONRespMax = 11;
 
 // Maximum response size for the first line of HTTPREAD, the response
 // size:
 // 99999 -> 5
-constexpr size_t kHTTPREADSizeMax = 5;
+constexpr size_t kHTTPDataMaxStrSize = 5;
 
 StatusOr<bool> SIM808::GPRSEnabled() {
     char response[kSAPBRQueryMax+1] = { '\0' };
@@ -138,6 +141,67 @@ StatusOr<HTTPResponseStatus> SIM808::HTTPGet(const char *uri) {
     return HTTPAction(GET);
 }
 
+StatusOr<HTTPResponseStatus> SIM808::HTTPPost(const char *uri,
+                                              const uint8_t *data,
+                                              size_t size) {
+    if (size > kHTTPDataMax)
+        return Status(::util::error::Code::FAILED_PRECONDITION,
+                      "POST data size too large");
+
+    auto status = HTTPRequestSetup(uri);
+    if (!status.ok())
+        return status;
+
+    // Clear any data that may have been written previously.
+    status = SendSimpleCommand("AT+HTTPDATA=0,1000", "OK",
+                               std::chrono::milliseconds(100));
+    if (!status.ok())
+        return status;
+
+    // Prepare to write out the data.
+    char size_buf[kHTTPDataMaxStrSize+1] = { '\0' };
+    ::util::uitoa(size, size_buf, kHTTPDataMaxStrSize, 10);
+
+    // We have about 100ms from this point.
+    auto end = std::chrono::system_clock::now()
+        + std::chrono::milliseconds(100);
+
+    status = WriteParameterizedCommand("AT+HTTPDATA=%,100000", '%', size_buf,
+                                       end);
+    if (!status.ok())
+        return status;
+
+    // Wait until the device is ready to read.
+    status = VerifyResponse("\r\nDOWNLOAD\r\n", end);
+    if (!status.ok())
+        return status;
+
+    // Actually write out the data.
+    while (size) {
+        if (std::chrono::system_clock::now() > end)
+            return Status(::util::error::Code::DEADLINE_EXCEEDED, "timeout");
+
+        status = io_->Write(*data);
+        if (!status.ok()) {
+            // Would block. retry.
+            if (status.error_code() == ::util::error::Code::RESOURCE_EXHAUSTED)
+                continue;
+
+            return status;
+        }
+
+        size--;
+        data++;
+    }
+
+    // Good to go?
+    status = VerifyResponse("\r\nOK\r\n", end);
+    if (!status.ok())
+        return status;
+
+    return HTTPAction(POST);
+}
+
 StatusOr<size_t> SIM808::HTTPRead(char *response, size_t size) {
     // HTTPREAD has a special response format, so we handle it explicitly,
     // rather than using one of the Send*Command functions.
@@ -161,11 +225,14 @@ StatusOr<size_t> SIM808::HTTPRead(char *response, size_t size) {
         return status;
     }
 
-    char data_len_buf[kHTTPREADSizeMax+1] = { '\0' };
+    char data_len_buf[kHTTPDataMaxStrSize+1] = { '\0' };
     auto statusor = ReadResponse("HTTPREAD", data_len_buf,
-                                 kHTTPREADSizeMax, end);
+                                 kHTTPDataMaxStrSize, end);
     if (!statusor.ok())
         return statusor.status();
+
+    if (statusor.Value() >= kHTTPDataMaxStrSize)
+        return Status(::util::error::Code::UNKNOWN, "response too large");
 
     size_t data_len = strtoull(data_len_buf, nullptr, 10);
 

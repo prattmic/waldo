@@ -141,6 +141,7 @@ TEST_F(SIM808Test, HTTPGet) {
     status = sim_.HTTPEnable(true);
     ASSERT_OK(status);
 
+    // Returns "hello\nworld\n".
     auto statusor = sim_.HTTPGet("http://pratt.im/hello.txt");
     ASSERT_OK(statusor.status());
     auto resp_status = statusor.Value();
@@ -153,6 +154,44 @@ TEST_F(SIM808Test, HTTPGet) {
     ASSERT_OK(statusor2.status());
     EXPECT_EQ(12ull, statusor2.Value());
     EXPECT_STREQ("hello\nworld\n", buf);
+
+    status = sim_.HTTPEnable(false);
+    EXPECT_OK(status);
+
+    status = sim_.GPRSEnable(false);
+    EXPECT_OK(status);
+}
+
+TEST_F(SIM808Test, HTTPPost) {
+    auto status = sim_.Initialize();
+    ASSERT_OK(status);
+
+    // Try to disable. These may return an error already disabled.
+    sim_.HTTPEnable(false);
+    sim_.GPRSEnable(false);
+
+    status = sim_.GPRSEnable(true);
+    ASSERT_OK(status);
+
+    status = sim_.HTTPEnable(true);
+    ASSERT_OK(status);
+
+    uint8_t message[] = { 'h', 'i' };
+    size_t size = 2;
+
+    // Response body contains the Content-Length of the request.
+    auto statusor = sim_.HTTPPost("http://pratt.im/post", message, size);
+    ASSERT_OK(statusor.status());
+    auto resp_status = statusor.Value();
+    EXPECT_EQ(200, resp_status.code);
+    EXPECT_EQ(1ull, resp_status.bytes);
+
+    char buf[2] = { '\0' };
+
+    auto statusor2 = sim_.HTTPRead(buf, 1);
+    ASSERT_OK(statusor2.status());
+    EXPECT_EQ(1ull, statusor2.Value());
+    EXPECT_STREQ("2", buf);
 
     status = sim_.HTTPEnable(false);
     EXPECT_OK(status);

@@ -48,8 +48,13 @@ class SIM808 {
     // be read with HTTPRead.
     StatusOr<HTTPResponseStatus> HTTPGet(const char *uri);
 
-    // Read the response body from the preceding successful HTTPGet. Returns
-    // the number of bytes written to response.
+    // Make an HTTP POST request with the specified data. If successful, the
+    // reponse body can be read with HTTPRead.
+    StatusOr<HTTPResponseStatus> HTTPPost(const char *uri, const uint8_t *data,
+                                          size_t size);
+
+    // Read the response body from the preceding successful HTTPGet or
+    // HTTPPost. Returns the number of bytes written to response.
     StatusOr<size_t> HTTPRead(char *response, size_t size);
 
  private:
