@@ -17,7 +17,7 @@ void HTTP() {
     sim.HTTPEnable(true);
     sim.HTTPGet("http://pratt.im/hello.txt");
 
-    char buf[13] = { '\0' };
+    uint8_t buf[13] = { '\0' };
 
     sim.HTTPRead(buf, 12);
 }

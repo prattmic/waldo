@@ -55,7 +55,7 @@ class SIM808 {
 
     // Read the response body from the preceding successful HTTPGet or
     // HTTPPost. Returns the number of bytes written to response.
-    StatusOr<size_t> HTTPRead(char *response, size_t size);
+    StatusOr<size_t> HTTPRead(uint8_t *response, size_t size);
 
  private:
     // Send a command and with a fixed expected response.

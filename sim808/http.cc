@@ -203,7 +203,7 @@ StatusOr<HTTPResponseStatus> SIM808::HTTPPost(const char *uri,
     return HTTPAction(POST);
 }
 
-StatusOr<size_t> SIM808::HTTPRead(char *response, size_t size) {
+StatusOr<size_t> SIM808::HTTPRead(uint8_t *response, size_t size) {
     // HTTPREAD has a special response format, so we handle it explicitly,
     // rather than using one of the Send*Command functions.
     //
@@ -258,7 +258,7 @@ StatusOr<size_t> SIM808::HTTPRead(char *response, size_t size) {
             return status;
         }
 
-        char c = statusor.Value();
+        uint8_t c = statusor.Value();
 
         // We keep consuming the response even if there is no more room
         // in the buffer, so we can see if the command itself was successful.

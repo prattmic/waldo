@@ -67,7 +67,7 @@ class SIMHttpTest : public ::testing::Test {
 };
 
 TEST_F(SIMHttpTest, Get) {
-    char response_body[100] = { '\0' };
+    uint8_t response_body[100] = { '\0' };
     size_t size = sizeof(response_body);
 
     // Returns "hello\nworld\n".
@@ -80,14 +80,14 @@ TEST_F(SIMHttpTest, Get) {
     EXPECT_EQ(12ull, resp_status.body_length);
     EXPECT_EQ(12ull, resp_status.copied_length);
 
-    EXPECT_STREQ("hello\nworld\n", response_body);
+    EXPECT_STREQ("hello\nworld\n", reinterpret_cast<char*>(response_body));
 }
 
 TEST_F(SIMHttpTest, HTTPPost) {
-    uint8_t message[] = { 'h', 'i' };
+    uint8_t message[] = "hi";
     size_t size = 2;
 
-    char response_body[100] = { '\0' };
+    uint8_t response_body[100] = { '\0' };
 
     // Response body contains the Content-Length of the request.
     auto statusor = http_->Post("http://pratt.im/post", message, size,
@@ -98,5 +98,5 @@ TEST_F(SIMHttpTest, HTTPPost) {
     EXPECT_EQ(1ull, resp_status.body_length);
     EXPECT_EQ(1ull, resp_status.copied_length);
 
-    EXPECT_STREQ("2", response_body);
+    EXPECT_STREQ("2", reinterpret_cast<char*>(response_body));
 }

@@ -13,7 +13,7 @@ class CPRHttp : public Http {
  public:
     CPRHttp() {}
 
-    ::util::StatusOr<HTTPResponse> Get(const char *uri, char *body,
+    ::util::StatusOr<HTTPResponse> Get(const char *uri, uint8_t *body,
                                        size_t size) {
         auto response = cpr::Get(cpr::Url{uri});
 
@@ -21,13 +21,14 @@ class CPRHttp : public Http {
         ret.status_code = response.status_code;
         ret.body_length = response.text.length();
 
-        ret.copied_length = response.text.copy(body, size);
+        ret.copied_length = response.text.copy(reinterpret_cast<char*>(body),
+                                               size);
 
         return ret;
     }
 
     ::util::StatusOr<HTTPResponse> Post(const char *uri, const uint8_t *data,
-            size_t data_size, char *response_body, size_t response_size) {
+            size_t data_size, uint8_t *response_body, size_t response_size) {
         auto response = cpr::Post(cpr::Url{uri},
                                   cpr::Body{reinterpret_cast<const char*>(data),
                                             data_size});
@@ -37,8 +38,8 @@ class CPRHttp : public Http {
         ret.body_length = response.text.length();
 
         if (response_body)
-            ret.copied_length = response.text.copy(response_body,
-                                                   response_size);
+            ret.copied_length = response.text.copy(
+                    reinterpret_cast<char*>(response_body), response_size);
         else
             ret.copied_length = 0;
 

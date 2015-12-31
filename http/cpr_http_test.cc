@@ -10,7 +10,7 @@ using http::CPRHttp;
 TEST(CPRHttpTest, Get) {
     auto http = std::unique_ptr<Http>(new CPRHttp());
 
-    char body[100] = { '\0' };
+    uint8_t body[100] = { '\0' };
 
     auto statusor = http->Get("http://pratt.im/hello.txt", body, sizeof(body));
     EXPECT_OK(statusor.status());
@@ -21,7 +21,7 @@ TEST(CPRHttpTest, Get) {
     EXPECT_EQ(11ull, response.copied_length);
 
     // For some reason CPR strips the trailing newline.
-    EXPECT_STREQ("hello\nworld", body);
+    EXPECT_STREQ("hello\nworld", reinterpret_cast<char*>(body));
 }
 
 TEST(CPRHttpTest, Post) {
@@ -29,7 +29,7 @@ TEST(CPRHttpTest, Post) {
 
     uint8_t data[] = "hi";
 
-    char body[100] = { '\0' };
+    uint8_t body[100] = { '\0' };
 
     auto statusor = http->Post("http://pratt.im/post", data, sizeof(data),
                               body, sizeof(body));
@@ -41,5 +41,5 @@ TEST(CPRHttpTest, Post) {
     EXPECT_EQ(1ull, response.copied_length);
 
     // CPR includes the trailing NUL.
-    EXPECT_STREQ("3", body);
+    EXPECT_STREQ("3", reinterpret_cast<char*>(body));
 }

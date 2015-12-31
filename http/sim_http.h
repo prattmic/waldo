@@ -13,7 +13,7 @@ class SIMHttp : public Http {
  public:
     SIMHttp(sim808::SIM808 *sim) : sim_(sim) {}
 
-    ::util::StatusOr<HTTPResponse> Get(const char *uri, char *body,
+    ::util::StatusOr<HTTPResponse> Get(const char *uri, uint8_t *body,
                                        size_t size) {
         auto getstatusor = sim_->HTTPGet(uri);
         if (!getstatusor.ok())
@@ -39,7 +39,7 @@ class SIMHttp : public Http {
     }
 
     ::util::StatusOr<HTTPResponse> Post(const char *uri, const uint8_t *data,
-            size_t data_size, char *response_body, size_t response_size) {
+            size_t data_size, uint8_t *response_body, size_t response_size) {
         auto poststatusor = sim_->HTTPPost(uri, data, data_size);
         if (!poststatusor.ok())
             return poststatusor.status();

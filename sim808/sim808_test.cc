@@ -148,12 +148,12 @@ TEST_F(SIM808Test, HTTPGet) {
     EXPECT_EQ(200, resp_status.code);
     EXPECT_EQ(12ull, resp_status.bytes);
 
-    char buf[13] = { '\0' };
+    uint8_t buf[13] = { '\0' };
 
     auto statusor2 = sim_.HTTPRead(buf, 12);
     ASSERT_OK(statusor2.status());
     EXPECT_EQ(12ull, statusor2.Value());
-    EXPECT_STREQ("hello\nworld\n", buf);
+    EXPECT_STREQ("hello\nworld\n", reinterpret_cast<char*>(buf));
 
     status = sim_.HTTPEnable(false);
     EXPECT_OK(status);
@@ -176,7 +176,7 @@ TEST_F(SIM808Test, HTTPPost) {
     status = sim_.HTTPEnable(true);
     ASSERT_OK(status);
 
-    uint8_t message[] = { 'h', 'i' };
+    uint8_t message[] = "hi";
     size_t size = 2;
 
     // Response body contains the Content-Length of the request.
@@ -186,12 +186,12 @@ TEST_F(SIM808Test, HTTPPost) {
     EXPECT_EQ(200, resp_status.code);
     EXPECT_EQ(1ull, resp_status.bytes);
 
-    char buf[2] = { '\0' };
+    uint8_t buf[2] = { '\0' };
 
     auto statusor2 = sim_.HTTPRead(buf, 1);
     ASSERT_OK(statusor2.status());
     EXPECT_EQ(1ull, statusor2.Value());
-    EXPECT_STREQ("2", buf);
+    EXPECT_STREQ("2", reinterpret_cast<char*>(buf));
 
     status = sim_.HTTPEnable(false);
     EXPECT_OK(status);
