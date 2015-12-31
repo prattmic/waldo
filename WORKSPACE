@@ -5,6 +5,13 @@ new_git_repository(
     build_file = "BUILD.googletest",
 )
 
+new_git_repository(
+    name = "cpr",
+    remote = "https://github.com/whoshuu/cpr",
+    commit = "bd23d4dc1ed5553b85d28088be434155c4895463",
+    build_file = "BUILD.cpr",
+)
+
 git_repository(
     name = "nanopb",
     remote = "https://github.com/prattmic/nanopb",
