@@ -5,21 +5,11 @@
 #include "external/cpr/include/cpr/cpr.h"
 #include "external/nanopb/util/task/status.h"
 #include "external/nanopb/util/task/statusor.h"
+#include "http/http.h"
 
 namespace http {
 
-struct HTTPResponse {
-    // HTTP response status code.
-    uint16_t status_code;
-
-    // Full size of response body.
-    size_t body_length;
-
-    // Length of response body copied out.
-    size_t copied_length;
-};
-
-class CPRHttp {
+class CPRHttp : public Http {
  public:
     CPRHttp() {}
 

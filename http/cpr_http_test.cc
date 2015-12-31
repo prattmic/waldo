@@ -1,15 +1,18 @@
+#include <memory>
 #include "external/googletest/googletest/include/gtest/gtest.h"
 #include "http/cpr_http.h"
+#include "http/http.h"
 #include "util/status_test.h"
 
+using http::Http;
 using http::CPRHttp;
 
 TEST(CPRHttpTest, Get) {
-    auto http = CPRHttp();
+    auto http = std::unique_ptr<Http>(new CPRHttp());
 
     char body[100] = { '\0' };
 
-    auto statusor = http.Get("http://pratt.im/hello.txt", body, sizeof(body));
+    auto statusor = http->Get("http://pratt.im/hello.txt", body, sizeof(body));
     EXPECT_OK(statusor.status());
 
     auto response = statusor.Value();
@@ -22,13 +25,13 @@ TEST(CPRHttpTest, Get) {
 }
 
 TEST(CPRHttpTest, Post) {
-    auto http = CPRHttp();
+    auto http = std::unique_ptr<Http>(new CPRHttp());
 
     char data[] = "hi";
 
     char body[100] = { '\0' };
 
-    auto statusor = http.Post("http://pratt.im/post", data, sizeof(data),
+    auto statusor = http->Post("http://pratt.im/post", data, sizeof(data),
                               body, sizeof(body));
     EXPECT_OK(statusor.status());
 
