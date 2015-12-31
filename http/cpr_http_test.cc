@@ -27,7 +27,7 @@ TEST(CPRHttpTest, Get) {
 TEST(CPRHttpTest, Post) {
     auto http = std::unique_ptr<Http>(new CPRHttp());
 
-    char data[] = "hi";
+    uint8_t data[] = "hi";
 
     char body[100] = { '\0' };
 

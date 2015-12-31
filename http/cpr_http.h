@@ -26,10 +26,11 @@ class CPRHttp : public Http {
         return ret;
     }
 
-    ::util::StatusOr<HTTPResponse> Post(const char *uri, const char *data,
+    ::util::StatusOr<HTTPResponse> Post(const char *uri, const uint8_t *data,
             size_t data_size, char *response_body, size_t response_size) {
         auto response = cpr::Post(cpr::Url{uri},
-                                  cpr::Body{data, data_size});
+                                  cpr::Body{reinterpret_cast<const char*>(data),
+                                            data_size});
 
         HTTPResponse ret;
         ret.status_code = response.status_code;

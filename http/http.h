@@ -26,7 +26,7 @@ class Http {
                                                size_t size) = 0;
 
     virtual ::util::StatusOr<HTTPResponse> Post(const char *uri,
-            const char *data, size_t data_size, char *response_body,
+            const uint8_t *data, size_t data_size, char *response_body,
             size_t response_size) = 0;
 };
 
