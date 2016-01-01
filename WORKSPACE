@@ -15,5 +15,5 @@ new_git_repository(
 git_repository(
     name = "nanopb",
     remote = "https://github.com/prattmic/nanopb",
-    commit = "713ff2c3dbd891992708b769c9b45c070e88ea94",
+    commit = "64242c503ff8c45f4cb8ff83212f7f890331c7fb",
 )

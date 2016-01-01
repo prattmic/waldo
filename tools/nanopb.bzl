@@ -1,4 +1,4 @@
-# FIXME(prattmic): This is from https://github.com/prattmic/nanopb 4dfed8c.
+# FIXME(prattmic): This is from https://github.com/prattmic/nanopb 64242c5.
 # Reference it directly once bazel is capable.
 
 def _proto_pb(ctx):
@@ -42,19 +42,28 @@ def _nanopb_srcs(ctx):
         command = "cp %s %s" % (proto.path, _renamed_proto.path),
     )
 
+    inputs = [_renamed_proto]
+
+    args = [
+        "--generated-include-format",
+        '#include "%s/%%s"' % (include_dir),
+        "--library-include-format",
+        '#include "%s"',
+    ]
+
+    if ctx.file.options:
+        inputs += [ctx.file.options]
+        args += ["--options-file="+ctx.file.options.path]
+
+    args += [_renamed_proto.path]
+
     ctx.action(
-        inputs=[_renamed_proto],
+        inputs=inputs,
         outputs=[
             ctx.outputs.source,
             ctx.outputs.header,
         ],
-        arguments = [
-            "--generated-include-format",
-            '#include "%s/%%s"' % (include_dir),
-            "--library-include-format",
-            '#include "%s"',
-            _renamed_proto.path
-        ],
+        arguments = args,
         executable = nanopb_generator,
         progress_message = "Generating nanopb C source from %s" % (proto.basename),
     )
@@ -71,6 +80,11 @@ nanopb_srcs = rule(
             allow_files=True,
             single_file=True,
         ),
+        # Optional nanopb 'options' file.
+        "options": attr.label(
+            allow_files=True,
+            single_file=True,
+        ),
     },
     outputs={
         "_renamed_proto": "%{name}.pb",
@@ -81,7 +95,7 @@ nanopb_srcs = rule(
     output_to_genfiles=True,
 )
 
-def nanopb_library(name, proto):
+def nanopb_library(name, proto, options=None):
     pb_name = name + "_pb"
     srcs_name = name + "_srcs"
 
@@ -93,6 +107,7 @@ def nanopb_library(name, proto):
     nanopb_srcs(
         name = srcs_name,
         proto = pb_name,
+        options = options,
     )
 
     native.cc_library(
@@ -112,18 +127,29 @@ def _nanopb_cpp_srcs(ctx):
     proto = ctx.file.proto
     nanopb_cpp_generator = ctx.executable._nanopb_cpp_generator
 
+    inputs = [proto]
+
+    args = [
+        "--include",
+        ctx.file.nanopb_include.short_path,
+        "--output",
+        ctx.outputs.out.path,
+    ]
+
+    if ctx.file.options:
+        inputs += [ctx.file.options]
+        # Note: we *must* use = instead of a space or argparse will treat this
+        # as the proto file.
+        args += ["--options-file="+ctx.file.options.path]
+
+    args += [proto.path]
+
     ctx.action(
-        inputs=[proto],
+        inputs=inputs,
         outputs=[
             ctx.outputs.out,
         ],
-        arguments = [
-            "--include",
-            ctx.file.nanopb_include.short_path,
-            "--output",
-            ctx.outputs.out.path,
-            proto.path,
-        ],
+        arguments = args,
         executable = nanopb_cpp_generator,
         progress_message = "Generating nanopb C++ source from %s" \
             % (proto.basename),
@@ -141,6 +167,11 @@ nanopb_cpp_srcs = rule(
             allow_files=True,
             single_file=True,
         ),
+        # Optional nanopb 'options' file.
+        "options": attr.label(
+            allow_files=True,
+            single_file=True,
+        ),
         "out": attr.output(mandatory=True),
         # Unfortunately Skylark does not expose the headers available from
         # a cc_library, so we just pass the header directly.
@@ -154,12 +185,13 @@ nanopb_cpp_srcs = rule(
     output_to_genfiles=True,
 )
 
-def nanopb_cpp_library(name, proto, lib=None):
+def nanopb_cpp_library(name, proto, options=None, lib=None):
     """Create a C++ nanopb library from a proto or nanopb_library.
 
     Args:
         name: Target name
         proto: Source proto.
+        options: Optional nanopb options file.
         lib: Optional nanopb_library target. One will be created if not
              specified.
     """
@@ -168,6 +200,7 @@ def nanopb_cpp_library(name, proto, lib=None):
         nanopb_library(
             name = lib,
             proto = proto,
+            options = options,
         )
 
     srcs_name = name + "_srcs"
@@ -182,6 +215,7 @@ def nanopb_cpp_library(name, proto, lib=None):
     nanopb_cpp_srcs(
         name = srcs_name,
         proto = pb_name,
+        options = options,
         out = header_name,
         # We have to depend on internal details of nanopb_library here.
         nanopb_include = lib + "_srcs.pb.h"
