@@ -1,0 +1,7 @@
+message Location {
+    optional string latitude = 1;
+    optional string longitude = 2;
+    optional string altitude_msl = 3;
+    optional string ground_speed = 4;
+    optional string heading = 5;
+}

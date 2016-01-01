@@ -1,0 +1,5 @@
+Location.latitude       max_size:12
+Location.longitude      max_size:12
+Location.altitude_msl   max_size:12
+Location.ground_speed   max_size:12
+Location.heading        max_size:12

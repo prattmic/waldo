@@ -1,14 +1,17 @@
-package hello
+package app
 
 import (
-    "fmt"
-    "net/http"
+	"fmt"
+	"net/http"
+
+	pb "github.com/prattmic/waldo/proto/location"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprint(w, "Hello, world!")
+	var loc pb.Location
+	fmt.Fprint(w, "Hello, world!: ", loc)
 }
 
 func init() {
-    http.HandleFunc("/", handler)
+	http.HandleFunc("/", handler)
 }
