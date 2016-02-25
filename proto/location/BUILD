@@ -1,4 +1,4 @@
-load("/tools/nanopb", "nanopb_cpp_library")
+load("//tools:nanopb.bzl", "nanopb_cpp_library")
 
 nanopb_cpp_library(
     name = "location",
