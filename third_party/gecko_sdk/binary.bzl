@@ -12,6 +12,8 @@ def efm32_binary(name, deps=[], copts=[], linkopts=[], **kwargs):
             "//third_party/gecko_sdk:Device/SiliconLabs/EFM32HG/Source/GCC/efm32hg.ld",
         ],
         linkopts = [
+            "-mcpu=cortex-m0plus",
+            "-mthumb",
             "-static",
             "-T",
             "//third_party/gecko_sdk:Device/SiliconLabs/EFM32HG/Source/GCC/efm32hg.ld",
