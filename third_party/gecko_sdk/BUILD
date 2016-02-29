@@ -63,6 +63,10 @@ cc_library(
     ],
     deps = [":efm32hg322f64"],
     alwayslink = 1,
+    # Startup code must *not* use the GOT, or anything else in the .data
+    # section, since it is responsible for setting up the .data section.
+    linkstatic = 1,
+    nocopts = "-fPIC",
 )
 
 exports_files(["Device/SiliconLabs/EFM32HG/Source/GCC/efm32hg.ld"])
