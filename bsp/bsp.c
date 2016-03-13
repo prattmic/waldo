@@ -111,6 +111,10 @@ int _write(int file, char *ptr, int len) {
 
 // TODO(prattmic): complete
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
+    if (tv) {
+        tv->tv_sec = 0;
+        tv->tv_usec = 0;
+    }
     errno = EINVAL;
     return -1;
 }
