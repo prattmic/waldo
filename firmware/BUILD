@@ -22,3 +22,9 @@ raw_binary(
     name = "bin",
     src = ":firmware",
 )
+
+sh_binary(
+    name = "flash",
+    srcs = ["flash.sh"],
+    data = [":bin.bin"],
+)
