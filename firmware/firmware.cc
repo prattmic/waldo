@@ -41,16 +41,11 @@ void Main() {
         }
     }
 
-    auto io = statusor.ConsumeValue();
+    auto uart_io = statusor.ConsumeValue();
+    std::unique_ptr<io::ByteIO> io(&uart_io);
 
     while (1) {
-        io.Write('H');
-        io.Write('e');
-        io.Write('l');
-        io.Write('l');
-        io.Write('o');
-        io.Write('\r');
-        io.Write('\n');
+        *io << "Hello" << " World!" << "\r\n";
     }
 }
 
