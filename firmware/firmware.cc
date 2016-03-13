@@ -35,16 +35,20 @@ void RandomTest() {
     HTTP();
 }
 
-void Main() {
+// Initialize the logging UART and logger.
+void SetupLogging() {
     auto statusor = io::UartByteIO::Uart1();
     if (!statusor.ok()) {
-        while (1) {
-        }
+        while (1) {}
     }
 
     auto uart_io = statusor.ConsumeValue();
-    std::unique_ptr<io::ByteIO> io(&uart_io);
+    std::unique_ptr<io::ByteIO> io(new io::UartByteIO(std::move(uart_io)));
     logging::SetupLogger(std::move(io));
+}
+
+void Main() {
+    SetupLogging();
 
     while (1) {
         LOG(INFO) << "Hello" << " World!";
