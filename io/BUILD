@@ -79,3 +79,14 @@ cc_library(
         "@nanopb//util/task:status",
     ],
 )
+
+cc_library(
+    name = "uart_byteio",
+    srcs = ["uart_byteio.cc"],
+    hdrs = ["uart_byteio.h"],
+    deps = [
+        ":byteio",
+        "//third_party/gecko_sdk:efm32hg322f64",
+        "@nanopb//util/task:status",
+    ],
+)

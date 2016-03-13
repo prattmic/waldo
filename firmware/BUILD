@@ -14,6 +14,7 @@ efm32_binary(
         ":simple",
         "//io:byteio",
         "//io:null_byteio",
+        "//io:uart_byteio",
         "//sim808",
     ],
 )
