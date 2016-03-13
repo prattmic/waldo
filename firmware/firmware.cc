@@ -5,6 +5,7 @@
 #include "io/byteio.h"
 #include "io/null_byteio.h"
 #include "io/uart_byteio.h"
+#include "log/log.h"
 #include "sim808/sim808.h"
 
 namespace waldo {
@@ -43,9 +44,10 @@ void Main() {
 
     auto uart_io = statusor.ConsumeValue();
     std::unique_ptr<io::ByteIO> io(&uart_io);
+    logging::SetupLogger(std::move(io));
 
     while (1) {
-        *io << "Hello" << " World!" << "\r\n";
+        LOG(INFO) << "Hello" << " World!";
     }
 }
 

@@ -31,7 +31,7 @@ class Logger {
 
     ~Logger() {
         if (internal::sink)
-            *internal::sink << "\n";
+            *internal::sink << "\r\n";
     }
 
     Logger& operator<<(const char *s) {
