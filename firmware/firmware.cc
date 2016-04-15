@@ -3,6 +3,8 @@
 #include "external/nanopb/pb_encode.h"
 #include "external/nanopb/util/task/status.h"
 #include "firmware/simple.pb.hpp"
+#include "http/http.h"
+#include "http/sim_http.h"
 #include "io/byteio.h"
 #include "io/uart_byteio.h"
 #include "log/log.h"
@@ -21,9 +23,11 @@ void HTTP() {
 
     auto sim = sim808::SIM808(std::move(sim_io));
 
-    uint8_t buf[13] = { '\0' };
-    ::util::StatusOr<::sim808::HTTPResponseStatus> resp;
-    ::util::StatusOr<size_t> read;
+    std::unique_ptr<http::Http> http;
+    uint8_t response_body[100] = { '\0' };
+    size_t size = sizeof(response_body);
+    util::StatusOr<http::HTTPResponse> statusorresp;
+    http::HTTPResponse resp;
 
     LOG(INFO) << "Initializing SIM808";
     auto status = sim.Initialize();
@@ -44,27 +48,36 @@ void HTTP() {
         goto out_disable_gprs;
     }
 
+    http = std::unique_ptr<http::Http>(new http::SIMHttp(&sim));
     LOG(INFO) << "HTTP GET http://pratt.im/hello.txt";
 
-    resp = sim.HTTPGet("http://pratt.im/hello.txt");
-    if (!resp.ok()) {
-        LOG(ERROR) << "Failed to HTTP GET: " << resp.status().error_message();
-        goto out_disable_http;
-    } else if (resp.Value().code != 200) {
-        LOG(ERROR) << "Bad response code; expected 200 got " << static_cast<uint32_t>(resp.Value().code);
+    statusorresp = http->Get("http://pratt.im/hello.txt", response_body, size);
+    if (!statusorresp.ok()) {
+        LOG(ERROR) << "Failed to HTTP GET: "
+                   << statusorresp.status().error_message();
         goto out_disable_http;
     }
 
-    LOG(INFO) << "Response size: " << static_cast<uint32_t>(resp.Value().bytes);
-
-    read = sim.HTTPRead(buf, 12);
-    if (!read.ok()) {
-        LOG(ERROR) << "Failed to read response: " << read.status().error_message();
+    resp = statusorresp.Value();
+    if (resp.status_code != 200) {
+        LOG(ERROR) << "Bad response code; expected 200 got "
+                   << static_cast<uint32_t>(resp.status_code);
         goto out_disable_http;
     }
 
-    LOG(INFO) << "Read " << static_cast<uint32_t>(read.Value()) << " bytes";
-    LOG(INFO) << "Response body: " << reinterpret_cast<const char*>(buf);
+    LOG(INFO) << "Response body length: "
+              << static_cast<uint32_t>(resp.body_length);
+
+    if (resp.body_length != resp.copied_length) {
+        LOG(WARNING) << "Response body length "
+                     << static_cast<uint32_t>(resp.body_length)
+                     << " bytes, but only read "
+                     << static_cast<uint32_t>(resp.copied_length)
+                     << " bytes";
+    }
+
+    LOG(INFO) << "Response body: "
+              << reinterpret_cast<const char*>(response_body);
 
 out_disable_http:
     status = sim.HTTPEnable(false);

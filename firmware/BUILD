@@ -12,6 +12,8 @@ efm32_binary(
     srcs = ["firmware.cc"],
     deps = [
         ":simple",
+        "//http",
+        "//http:sim_http",
         "//io:byteio",
         "//io:uart_byteio",
         "//log",
