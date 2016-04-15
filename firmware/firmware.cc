@@ -4,7 +4,6 @@
 #include "external/nanopb/util/task/status.h"
 #include "firmware/simple.pb.hpp"
 #include "io/byteio.h"
-#include "io/logging_byteio.h"
 #include "io/uart_byteio.h"
 #include "log/log.h"
 #include "sim808/sim808.h"
@@ -19,9 +18,8 @@ void HTTP() {
 
     auto uart_io = statusor.ConsumeValue();
     std::unique_ptr<io::ByteIO> sim_io(new io::UartByteIO(std::move(uart_io)));
-    std::unique_ptr<io::ByteIO> io(new io::LoggingByteIO(std::move(sim_io)));
 
-    auto sim = sim808::SIM808(std::move(io));
+    auto sim = sim808::SIM808(std::move(sim_io));
 
     uint8_t buf[13] = { '\0' };
     ::util::StatusOr<::sim808::HTTPResponseStatus> resp;
