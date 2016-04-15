@@ -61,23 +61,20 @@ void HTTP() {
     resp = statusorresp.Value();
     if (resp.status_code != 200) {
         LOG(ERROR) << "Bad response code; expected 200 got "
-                   << static_cast<uint32_t>(resp.status_code);
+                   << resp.status_code;
         goto out_disable_http;
     }
 
     LOG(INFO) << "Response body length: "
-              << static_cast<uint32_t>(resp.body_length);
+              << resp.body_length;
 
     if (resp.body_length != resp.copied_length) {
-        LOG(WARNING) << "Response body length "
-                     << static_cast<uint32_t>(resp.body_length)
-                     << " bytes, but only read "
-                     << static_cast<uint32_t>(resp.copied_length)
+        LOG(WARNING) << "Response body length " << resp.body_length
+                     << " bytes, but only read " << resp.copied_length
                      << " bytes";
     }
 
-    LOG(INFO) << "Response body: "
-              << reinterpret_cast<const char*>(response_body);
+    LOG(INFO) << "Response body: " << response_body;
 
 out_disable_http:
     status = sim.HTTPEnable(false);

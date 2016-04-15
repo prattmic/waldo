@@ -71,6 +71,27 @@ class Logger {
         }
         return *this;
     }
+
+    Logger& operator<<(size_t i) {
+        if (internal::sink) {
+            // Biggest (64-bit) size_t is 20 characters (base 10).
+            char buf[21];
+            ::util::uitoa(i, buf, 21, 10);
+
+            *internal::sink << buf;
+        }
+        return *this;
+    }
+
+    Logger& operator<<(uint16_t i) {
+        *this << static_cast<uint32_t>(i);
+        return *this;
+    }
+
+    Logger& operator<<(int16_t i) {
+        *this << static_cast<int32_t>(i);
+        return *this;
+    }
 };
 
 extern void SetupLogger(std::unique_ptr<io::ByteIO> io);
