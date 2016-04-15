@@ -107,14 +107,13 @@ void Main() {
 
     HTTP();
 
-    while (1) {
-        //LOG(INFO) << "Hello" << " World!";
-    }
+    LOG(INFO) << "Waldo done!";
 }
 
 }  // namespace waldo
 
 extern "C" int main(void) {
     waldo::Main();
+    while (1) {}
     return 0;
 }
