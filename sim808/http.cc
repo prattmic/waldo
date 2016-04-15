@@ -251,11 +251,11 @@ StatusOr<size_t> SIM808::HTTPRead(uint8_t *response, size_t size) {
         auto statusor = io_->Read();
         if (!statusor.ok()) {
             // Would block. retry.
-            if (statusor.status().error_code() !=
+            if (statusor.status().error_code() ==
                 ::util::error::Code::RESOURCE_EXHAUSTED)
                 continue;
 
-            return status;
+            return statusor.status();
         }
 
         uint8_t c = statusor.Value();
