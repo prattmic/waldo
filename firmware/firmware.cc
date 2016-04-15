@@ -49,10 +49,10 @@ void HTTP() {
     resp = sim.HTTPGet("http://pratt.im/hello.txt");
     if (!resp.ok()) {
         LOG(ERROR) << "Failed to HTTP GET: " << resp.status().error_message();
-        goto out_disable_gprs;
+        goto out_disable_http;
     } else if (resp.Value().code != 200) {
         LOG(ERROR) << "Bad response code; expected 200 got " << static_cast<uint32_t>(resp.Value().code);
-        goto out_disable_gprs;
+        goto out_disable_http;
     }
 
     LOG(INFO) << "Response size: " << static_cast<uint32_t>(resp.Value().bytes);
