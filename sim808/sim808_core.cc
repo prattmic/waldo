@@ -34,7 +34,6 @@ Status SIM808::VerifyResponse(const char *expected,
         auto statusor = io_->Read();
         if (!statusor.ok()) {
             // Would block. retry.
-            //LOG(INFO) << "Would block, retrying";
             if (statusor.status().error_code() ==
                 ::util::error::Code::RESOURCE_EXHAUSTED)
                 continue;
@@ -43,9 +42,6 @@ Status SIM808::VerifyResponse(const char *expected,
         }
 
         if (statusor.Value() != *expected) {
-            char vbuf[2] = {statusor.Value()};
-            char ebuf[2] = {*expected};
-            //LOG(INFO) << vbuf << " != " << ebuf;
             // Try to consume the rest of this line (probably ERROR), so the
             // next reader doesn't choke on it.
             if (statusor.Value() != '\n')
@@ -85,7 +81,6 @@ Status SIM808::InitAutoBaud() {
         status = VerifyResponse("AT\r\r\nOK\r\n", end);
         if (status.ok())
             return Status::OK;
-        //LOG(ERROR) << "VerifyResponse error: " << status.ToString();
     }
 
     return Status(::util::error::Code::DEADLINE_EXCEEDED,
