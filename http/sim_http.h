@@ -13,29 +13,19 @@ class SIMHttp : public Http {
  public:
     SIMHttp(sim808::SIM808 *sim) : sim_(sim) {}
 
-    ::util::StatusOr<HTTPResponse> Get(const char *uri, uint8_t *body,
-                                       size_t size) {
+    ::util::StatusOr<HTTPResponse> Get(const char *uri, uint8_t *response_body,
+                                       size_t response_size) {
         auto getstatusor = sim_->HTTPGet(uri);
         if (!getstatusor.ok())
             return getstatusor.status();
 
         auto sim_resp = getstatusor.Value();
 
-        HTTPResponse ret;
-        ret.status_code = sim_resp.code;
-        ret.body_length = sim_resp.bytes;
+        HTTPResponse resp;
+        resp.status_code = sim_resp.code;
+        resp.body_length = sim_resp.bytes;
 
-        if (body) {
-            auto readstatusor = sim_->HTTPRead(body, size);
-            if (!readstatusor.ok())
-                return readstatusor.status();
-
-            ret.copied_length = readstatusor.Value();
-        } else {
-            ret.copied_length = 0;
-        }
-
-        return ret;
+        return ReadResponse(resp, response_body, response_size);
     }
 
     ::util::StatusOr<HTTPResponse> Post(const char *uri, const uint8_t *data,
@@ -46,24 +36,31 @@ class SIMHttp : public Http {
 
         auto sim_resp = poststatusor.Value();
 
-        HTTPResponse ret;
-        ret.status_code = sim_resp.code;
-        ret.body_length = sim_resp.bytes;
+        HTTPResponse resp;
+        resp.status_code = sim_resp.code;
+        resp.body_length = sim_resp.bytes;
 
+        return ReadResponse(resp, response_body, response_size);
+    }
+
+ private:
+    // Reads the HTTP response and fills out the rest of resp.
+    ::util::StatusOr<HTTPResponse> ReadResponse(HTTPResponse resp,
+                                                uint8_t *response_body,
+                                                size_t response_size) {
         if (response_body) {
             auto readstatusor = sim_->HTTPRead(response_body, response_size);
             if (!readstatusor.ok())
                 return readstatusor.status();
 
-            ret.copied_length = readstatusor.Value();
+            resp.copied_length = readstatusor.Value();
         } else {
-            ret.copied_length = 0;
+            resp.copied_length = 0;
         }
 
-        return ret;
+        return resp;
     }
 
- private:
     sim808::SIM808* sim_;
 };
 

@@ -22,8 +22,9 @@ class Http {
  public:
     virtual ~Http() = default;
 
-    virtual ::util::StatusOr<HTTPResponse> Get(const char *uri, uint8_t *body,
-                                               size_t size) = 0;
+    virtual ::util::StatusOr<HTTPResponse> Get(const char *uri,
+                                               uint8_t *response_body,
+                                               size_t response_size) = 0;
 
     virtual ::util::StatusOr<HTTPResponse> Post(const char *uri,
             const uint8_t *data, size_t data_size, uint8_t *response_body,
