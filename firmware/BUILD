@@ -1,5 +1,5 @@
+load("@nanopb//:nanopb.bzl", "nanopb_cpp_library")
 load("//third_party/gecko_sdk:binary.bzl", "efm32_binary")
-load("//tools:nanopb.bzl", "nanopb_cpp_library")
 load("//tools:raw_binary.bzl", "raw_binary")
 
 nanopb_cpp_library(
