@@ -13,10 +13,11 @@ efm32_binary(
     deps = [
         ":simple",
         "//io:byteio",
-        "//io:null_byteio",
+        "//io:logging_byteio",
         "//io:uart_byteio",
         "//log",
         "//sim808",
+        "@nanopb//util/task:status",
     ],
 )
 

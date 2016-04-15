@@ -86,6 +86,7 @@ cc_library(
     hdrs = ["uart_byteio.h"],
     deps = [
         ":byteio",
+        "//log",
         "//third_party/gecko_sdk:efm32hg322f64",
         "@nanopb//util/task:status",
     ],

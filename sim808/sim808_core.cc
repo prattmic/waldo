@@ -25,7 +25,7 @@ void SIM808::TryConsumeLine(std::chrono::system_clock::time_point timeout) {
 
 Status SIM808::VerifyResponse(const char *expected,
                               std::chrono::system_clock::time_point timeout) {
-    LOG(INFO) << "Expecting response: " << expected;
+    //LOG(INFO) << "Expecting response: " << expected;
 
     while (*expected) {
         if (std::chrono::system_clock::now() > timeout)
@@ -34,6 +34,7 @@ Status SIM808::VerifyResponse(const char *expected,
         auto statusor = io_->Read();
         if (!statusor.ok()) {
             // Would block. retry.
+            //LOG(INFO) << "Would block, retrying";
             if (statusor.status().error_code() ==
                 ::util::error::Code::RESOURCE_EXHAUSTED)
                 continue;
@@ -42,6 +43,9 @@ Status SIM808::VerifyResponse(const char *expected,
         }
 
         if (statusor.Value() != *expected) {
+            char vbuf[2] = {statusor.Value()};
+            char ebuf[2] = {*expected};
+            //LOG(INFO) << vbuf << " != " << ebuf;
             // Try to consume the rest of this line (probably ERROR), so the
             // next reader doesn't choke on it.
             if (statusor.Value() != '\n')
@@ -64,7 +68,7 @@ void SIM808::TryAbort() {
 // The SIM808 turns on in auto-baud mode. We need to send "AT" a few times
 // to get it ready for further commands.
 Status SIM808::InitAutoBaud() {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 50; i++) {
         auto end = std::chrono::system_clock::now()
             + std::chrono::milliseconds(100);
 
@@ -81,6 +85,7 @@ Status SIM808::InitAutoBaud() {
         status = VerifyResponse("AT\r\r\nOK\r\n", end);
         if (status.ok())
             return Status::OK;
+        //LOG(ERROR) << "VerifyResponse error: " << status.ToString();
     }
 
     return Status(::util::error::Code::DEADLINE_EXCEEDED,
@@ -105,7 +110,13 @@ Status SIM808::DisableCommandEcho() {
 
 // Check if the device is ready and can skip initialization.
 Status SIM808::CheckReady() {
-    return SendSimpleCommand("AT", "OK", std::chrono::milliseconds(100));
+    auto ret = SendSimpleCommand("AT", "OK", std::chrono::milliseconds(100));
+
+    auto end = std::chrono::system_clock::now()
+        + std::chrono::milliseconds(100);
+    TryConsumeLine(end);
+
+    return ret;
 }
 
 Status SIM808::Initialize() {

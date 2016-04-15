@@ -11,6 +11,7 @@ namespace io {
 
 class UartByteIO : public ByteIO {
  public:
+    static ::util::StatusOr<UartByteIO> Uart0();
     static ::util::StatusOr<UartByteIO> Uart1();
 
     // Read a single byte.

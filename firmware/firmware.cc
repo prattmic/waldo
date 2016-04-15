@@ -1,9 +1,10 @@
 #include <memory>
 
 #include "external/nanopb/pb_encode.h"
+#include "external/nanopb/util/task/status.h"
 #include "firmware/simple.pb.hpp"
 #include "io/byteio.h"
-#include "io/null_byteio.h"
+#include "io/logging_byteio.h"
 #include "io/uart_byteio.h"
 #include "log/log.h"
 #include "sim808/sim808.h"
@@ -11,17 +12,71 @@
 namespace waldo {
 
 void HTTP() {
-    std::unique_ptr<io::ByteIO> io(new io::NullByteIO());
+    auto statusor = io::UartByteIO::Uart0();
+    if (!statusor.ok()) {
+        while (1) {}
+    }
+
+    auto uart_io = statusor.ConsumeValue();
+    std::unique_ptr<io::ByteIO> sim_io(new io::UartByteIO(std::move(uart_io)));
+    std::unique_ptr<io::ByteIO> io(new io::LoggingByteIO(std::move(sim_io)));
 
     auto sim = sim808::SIM808(std::move(io));
 
-    sim.GPRSEnable(true);
-    sim.HTTPEnable(true);
-    sim.HTTPGet("http://pratt.im/hello.txt");
-
     uint8_t buf[13] = { '\0' };
+    ::util::StatusOr<::sim808::HTTPResponseStatus> resp;
+    ::util::StatusOr<size_t> read;
 
-    sim.HTTPRead(buf, 12);
+    LOG(INFO) << "Initializing SIM808";
+    auto status = sim.Initialize();
+    if (!status.ok()) {
+        LOG(ERROR) << "Failed to initialize SIM808: " << status.ToString();
+        return;
+    }
+
+    status = sim.GPRSEnable(true);
+    if (!status.ok()) {
+        LOG(ERROR) << "Failed to enable GPRS: " << status.error_message();
+        return;
+    }
+
+    status = sim.HTTPEnable(true);
+    if (!status.ok()) {
+        LOG(ERROR) << "Failed to enable HTTP: " << status.error_message();
+        goto out_disable_gprs;
+    }
+
+    LOG(INFO) << "HTTP GET http://pratt.im/hello.txt";
+
+    resp = sim.HTTPGet("http://pratt.im/hello.txt");
+    if (!resp.ok()) {
+        LOG(ERROR) << "Failed to HTTP GET: " << resp.status().error_message();
+        goto out_disable_gprs;
+    } else if (resp.Value().code != 200) {
+        LOG(ERROR) << "Bad response code; expected 200 got " << static_cast<uint32_t>(resp.Value().code);
+        goto out_disable_gprs;
+    }
+
+    LOG(INFO) << "Response size: " << static_cast<uint32_t>(resp.Value().bytes);
+
+    read = sim.HTTPRead(buf, 12);
+    if (!read.ok()) {
+        LOG(ERROR) << "Failed to read response: " << read.status().error_message();
+        goto out_disable_http;
+    }
+
+    LOG(INFO) << "Read " << static_cast<uint32_t>(read.Value()) << " bytes";
+    LOG(INFO) << "Response body: " << reinterpret_cast<const char*>(buf);
+
+out_disable_http:
+    status = sim.HTTPEnable(false);
+    if (!status.ok())
+        LOG(ERROR) << "Failed to disable HTTP: " << status.error_message();
+
+out_disable_gprs:
+    status = sim.GPRSEnable(false);
+    if (!status.ok())
+        LOG(ERROR) << "Failed to disable GPRS: " << status.error_message();
 }
 
 void RandomTest() {
@@ -50,8 +105,12 @@ void SetupLogging() {
 void Main() {
     SetupLogging();
 
+    LOG(INFO) << "Waldo booted!";
+
+    HTTP();
+
     while (1) {
-        LOG(INFO) << "Hello" << " World!";
+        //LOG(INFO) << "Hello" << " World!";
     }
 }
 

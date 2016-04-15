@@ -50,10 +50,10 @@ class LoggingByteIO : public ByteIO {
             char buf[5];
             pretty_char(statusor.Value(), buf);
 
-            LOG(INFO) << "Read: " << buf;
+            //LOG(INFO) << "Read: " << buf;
         } else {
-            LOG(INFO) << "Error reading: "
-                      << statusor.status().error_message();
+            //LOG(INFO) << "Error reading: "
+            //          << statusor.status().error_message();
         }
 
         return statusor;
@@ -64,11 +64,12 @@ class LoggingByteIO : public ByteIO {
         char buf[5];
         pretty_char(c, buf);
 
-        LOG(INFO) << "Writing: " << buf;
+        //LOG(INFO) << "Writing: " << buf;
 
         auto status = io_->Write(c);
-        if (!status.ok())
-            LOG(INFO) << "Error writing: " << status.error_message();
+        if (!status.ok()) {
+            //LOG(INFO) << "Error writing: " << status.error_message();
+        }
 
         return status;
     }
