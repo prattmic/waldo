@@ -16,3 +16,8 @@ cc_library(
     ],
     testonly = 1,
 )
+
+cc_library(
+    name = "cleanup",
+    hdrs = ["cleanup.h"],
+)
