@@ -12,6 +12,7 @@ efm32_binary(
     srcs = ["firmware.cc"],
     deps = [
         ":simple",
+        "//efm32:sim808",
         "//http",
         "//http:sim_http",
         "//io:byteio",

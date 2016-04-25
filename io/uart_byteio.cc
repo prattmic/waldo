@@ -60,26 +60,6 @@ util::StatusOr<UartByteIO> UartByteIO::Uart0() {
     gpio->P[4].MODEH |= GPIO_P_MODEH_MODE10_PUSHPULL
                         | GPIO_P_MODEH_MODE11_PUSHPULL;
 
-    // PC1 input pull-down.
-    gpio->P[2].DOUTCLR |= 1 << 1;
-    gpio->P[2].MODEL |= GPIO_P_MODEL_MODE1_INPUTPULL;
-
-    LOG(INFO) << "PWRSTAT: " << !!(gpio->P[2].DIN & (1 << 1));
-
-    // PC0 push-pull output.
-    gpio->P[2].DOUTCLR |= 1 << 0;
-    gpio->P[2].MODEL |= GPIO_P_MODEL_MODE0_PUSHPULL;
-
-    gpio->P[2].DOUTSET |= 1 << 0;
-
-    while (!(gpio->P[2].DIN & (1 << 1))) {
-        LOG(INFO) << "Still powered off";
-    }
-
-    gpio->P[2].DOUTCLR |= 1 << 0;
-
-    LOG(INFO) << "PWRSTAT: " << !!(gpio->P[2].DIN & (1 << 1));
-
     // HFRCO is 14MHz at boot.
     // HFPERCLK is HFRCO/1 at boot.
     // USART br = HFPERCLK / (OVS * (1 + CLKDIV / 256))

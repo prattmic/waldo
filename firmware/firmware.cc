@@ -1,5 +1,6 @@
 #include <memory>
 
+#include "efm32/sim808.h"
 #include "external/com_github_prattmic_nanopb/pb_encode.h"
 #include "external/com_github_prattmic_nanopb/util/task/status.h"
 #include "firmware/simple.pb.hpp"
@@ -21,7 +22,14 @@ void HTTP() {
     auto uart_io = statusor.ConsumeValue();
     std::unique_ptr<io::ByteIO> sim_io(new io::UartByteIO(std::move(uart_io)));
 
-    auto sim = sim808::SIM808(std::move(sim_io));
+    auto sim = efm32::EFMSIM808(std::move(sim_io));
+
+    LOG(INFO) << "Power cycling SIM808";
+    auto status = sim.PowerCycle();
+    if (!status.ok()) {
+        LOG(ERROR) << "Failed to power cycle SIM808: " << status.error_message();
+        return;
+    }
 
     std::unique_ptr<http::Http> http;
     uint8_t response_body[100] = { '\0' };
@@ -30,9 +38,9 @@ void HTTP() {
     http::HTTPResponse resp;
 
     LOG(INFO) << "Initializing SIM808";
-    auto status = sim.Initialize();
+    status = sim.Initialize();
     if (!status.ok()) {
-        LOG(ERROR) << "Failed to initialize SIM808: " << status.ToString();
+        LOG(ERROR) << "Failed to initialize SIM808: " << status.error_message();
         return;
     }
 
