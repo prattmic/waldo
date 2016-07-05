@@ -1,3 +1,5 @@
+workspace(name = "com_github_prattmic_waldo")
+
 new_git_repository(
     name = "googletest",
     remote = "https://github.com/google/googletest",
