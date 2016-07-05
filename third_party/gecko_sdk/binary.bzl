@@ -7,7 +7,7 @@ def efm32_binary(name, deps=[], copts=[], linkopts=[], **kwargs):
     native.cc_binary(
         name = name,
         deps = deps + [
-            "//bsp",
+            "//bsp:efm32",
             "//third_party/gecko_sdk:startup",
             "//third_party/gecko_sdk:Device/SiliconLabs/EFM32HG/Source/GCC/efm32hg.ld",
         ],
