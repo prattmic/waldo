@@ -161,7 +161,7 @@ StatusOr<HTTPResponseStatus> SIM808::HTTPPost(const char *uri,
 
     // Prepare to write out the data.
     char size_buf[kHTTPDataMaxStrSize+1] = { '\0' };
-    ::util::uitoa(size, size_buf, kHTTPDataMaxStrSize, 10);
+    ::util::uitoa(size, size_buf, kHTTPDataMaxStrSize, 10, 0);
 
     // We have about 100ms from this point.
     auto end = std::chrono::system_clock::now()

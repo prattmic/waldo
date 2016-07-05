@@ -3,11 +3,15 @@
 
 namespace util {
 
-char *uitoa(uint32_t number, char *buf, uint32_t len, uint32_t base) {
+char *uitoa(uint32_t number, char *buf, uint32_t len, uint32_t base, uint32_t pad) {
     char lookup[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXY";
     int i = 0;
 
     if (!len) {
+        return nullptr;
+    }
+
+    if (pad > len) {
         return nullptr;
     }
 
@@ -18,6 +22,11 @@ char *uitoa(uint32_t number, char *buf, uint32_t len, uint32_t base) {
     do {
         buf[i++] = lookup[number % base];
     } while (--len && (number /= base) > 0);
+
+    while (i < pad && len >= 0) {
+        buf[i++] = '0';
+        len--;
+    }
 
     if (!len) {
         return nullptr;
@@ -45,10 +54,14 @@ static uint32_t int_abs(int32_t n) {
     }
 }
 
-char *itoa(int32_t number, char *buf, uint32_t len, uint32_t base) {
+char *itoa(int32_t number, char *buf, uint32_t len, uint32_t base, uint32_t pad) {
     int32_t i = 0;
 
     if (!len) {
+        return nullptr;
+    }
+
+    if (pad > len) {
         return nullptr;
     }
 
@@ -63,7 +76,7 @@ char *itoa(int32_t number, char *buf, uint32_t len, uint32_t base) {
 
     number = int_abs(number);
 
-    return uitoa(number, &buf[i], len, base);
+    return uitoa(number, &buf[i], len, base, pad);
 }
 
 }  // namespace util
