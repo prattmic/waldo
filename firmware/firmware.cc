@@ -1,5 +1,7 @@
 #include <memory>
 
+#include "efm32/clock.h"
+#include "efm32/rtc.h"
 #include "efm32/sim808.h"
 #include "external/com_github_prattmic_nanopb/pb_encode.h"
 #include "external/com_github_prattmic_nanopb/util/task/status.h"
@@ -119,6 +121,14 @@ void SetupLogging() {
 }
 
 void Main() {
+    auto status = efm32::ClockInit();
+    if (!status.ok())
+        return;
+
+    status = efm32::RTCInit();
+    if (!status.ok())
+        return;
+
     SetupLogging();
 
     LOG(INFO) << "Waldo booted!";

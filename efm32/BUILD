@@ -7,11 +7,13 @@ cc_library(
     hdrs = [
         "clock.h",
         "gpio.h",
+        "rtc.h",
     ],
     srcs = [
         "clock.cc",
         "gpio.cc",
         "peripherals.h",
+        "rtc.cc",
     ],
     deps = [
         "//log",

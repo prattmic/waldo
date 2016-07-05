@@ -7,6 +7,7 @@ enum Peripherals {
     PERIPHERAL_GPIO,
     PERIPHERAL_USART0,
     PERIPHERAL_USART1,
+    PERIPHERAL_RTC,
 };
 
 }  // namespace efm32
