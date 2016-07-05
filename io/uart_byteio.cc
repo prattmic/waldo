@@ -1,5 +1,5 @@
-#include "external/nanopb/util/task/status.h"
-#include "external/nanopb/util/task/statusor.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/statusor.h"
 #include "io/uart_byteio.h"
 #include "log/log.h"
 #include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/em_device.h"

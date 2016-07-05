@@ -15,7 +15,7 @@ cc_library(
     deps = [
         "//io:byteio",
         "//log",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
 

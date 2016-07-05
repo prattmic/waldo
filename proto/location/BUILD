@@ -1,4 +1,4 @@
-load("@nanopb//:nanopb.bzl", "nanopb_cpp_library")
+load("@com_github_prattmic_nanopb//:nanopb.bzl", "nanopb_cpp_library")
 
 nanopb_cpp_library(
     name = "location",

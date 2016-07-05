@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include "external/nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
 #include "sim808/http.h"
 #include "sim808/sim808.h"
 #include "util/string.h"

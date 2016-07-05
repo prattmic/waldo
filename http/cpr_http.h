@@ -3,8 +3,8 @@
 
 #include <stdint.h>
 #include "external/cpr/include/cpr/cpr.h"
-#include "external/nanopb/util/task/status.h"
-#include "external/nanopb/util/task/statusor.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/statusor.h"
 #include "http/http.h"
 
 namespace http {

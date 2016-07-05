@@ -3,7 +3,7 @@
 #include <memory>
 #include <utility>
 #include "external/googletest/googletest/include/gtest/gtest.h"
-#include "external/nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
 #include "io/byteio_streambuf.h"
 #include "io/linux_byteio.h"
 #include "util/status_test.h"

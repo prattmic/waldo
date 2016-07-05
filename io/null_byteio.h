@@ -1,8 +1,8 @@
 #ifndef IO_NULL_BYTEIO_H_
 #define IO_NULL_BYTEIO_H_
 
-#include "external/nanopb/util/task/status.h"
-#include "external/nanopb/util/task/statusor.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/statusor.h"
 #include "io/byteio.h"
 
 namespace io {

@@ -4,8 +4,8 @@
 #include <chrono>
 #include <memory>
 #include <utility>
-#include "external/nanopb/util/task/status.h"
-#include "external/nanopb/util/task/statusor.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/statusor.h"
 #include "io/byteio.h"
 #include "sim808/gns.h"
 #include "sim808/http.h"

@@ -1,4 +1,4 @@
-load("@nanopb//:nanopb.bzl", "nanopb_cpp_library")
+load("@com_github_prattmic_nanopb//:nanopb.bzl", "nanopb_cpp_library")
 load("//third_party/gecko_sdk:binary.bzl", "efm32_binary")
 load("//tools:raw_binary.bzl", "raw_binary")
 
@@ -17,8 +17,7 @@ efm32_binary(
         "//io:byteio",
         "//io:uart_byteio",
         "//log",
-        "//sim808",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
 

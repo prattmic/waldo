@@ -2,8 +2,8 @@
 #define HTTP_HTTP_H_
 
 #include <stdint.h>
-#include "external/nanopb/util/task/status.h"
-#include "external/nanopb/util/task/statusor.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/statusor.h"
 
 namespace http {
 

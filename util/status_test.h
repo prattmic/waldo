@@ -4,7 +4,7 @@
 #include <iostream>
 #include "external/googletest/googlemock/include/gmock/gmock.h"
 #include "external/googletest/googletest/include/gtest/gtest.h"
-#include "external/nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
 
 namespace testing {
 

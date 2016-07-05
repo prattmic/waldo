@@ -4,7 +4,7 @@ cc_library(
     name = "http",
     hdrs = ["http.h"],
     deps = [
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
 
@@ -14,7 +14,7 @@ cc_library(
     deps = [
         ":http",
         "@cpr//:cpr",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
 
@@ -38,7 +38,7 @@ cc_library(
     deps = [
         ":http",
         "//sim808",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
 

@@ -2,8 +2,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <utility>
-#include "external/nanopb/util/task/status.h"
-#include "external/nanopb/util/task/statusor.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/statusor.h"
 #include "io/linux_byteio.h"
 
 using io::LinuxByteIO;

@@ -1,7 +1,7 @@
 #include <memory>
 
-#include "external/nanopb/pb_encode.h"
-#include "external/nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/pb_encode.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
 #include "firmware/simple.pb.hpp"
 #include "http/http.h"
 #include "http/sim_http.h"

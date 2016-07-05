@@ -1,6 +1,6 @@
 #include <chrono>
-#include "external/nanopb/util/task/status.h"
-#include "external/nanopb/util/task/statusor.h"
+#include "external/com_github_prattmic_nanopb/util/task/status.h"
+#include "external/com_github_prattmic_nanopb/util/task/statusor.h"
 #include "log/log.h"
 #include "sim808/sim808.h"
 

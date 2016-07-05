@@ -12,7 +12,7 @@ cc_library(
     deps = [
         "@googletest//:gtest",
         "@googletest//:gmock",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
     testonly = 1,
 )

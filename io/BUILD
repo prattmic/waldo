@@ -3,7 +3,7 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "byteio",
     hdrs = ["byteio.h"],
-    deps = ["@nanopb//util/task:status"],
+    deps = ["@com_github_prattmic_nanopb//util/task:status"],
 )
 
 cc_library(
@@ -12,7 +12,7 @@ cc_library(
     hdrs = ["linux_byteio.h"],
     deps = [
         ":byteio",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
 
@@ -34,7 +34,7 @@ cc_library(
         ":byteio",
         "//log",
         "//util:string",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
 
@@ -76,7 +76,7 @@ cc_library(
     hdrs = ["null_byteio.h"],
     deps = [
         ":byteio",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
 
@@ -88,6 +88,6 @@ cc_library(
         ":byteio",
         "//log",
         "//third_party/gecko_sdk:efm32hg322f64",
-        "@nanopb//util/task:status",
+        "@com_github_prattmic_nanopb//util/task:status",
     ],
 )
