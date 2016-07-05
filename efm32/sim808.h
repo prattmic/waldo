@@ -22,7 +22,11 @@ class EFMSIM808 : public sim808::SIM808 {
     }
 
     // Turn power on or off.
-    util::Status SetPower(bool on);
+    util::Status SetPower(bool on,
+                          std::chrono::system_clock::time_point timeout);
+
+    // Retry up to three times with increasing timeout if SetPower fails.
+    util::Status SetPowerRetry(bool on);
 
     // Turn power off then on.
     util::Status PowerCycle();

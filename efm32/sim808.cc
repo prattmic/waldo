@@ -47,10 +47,7 @@ EFMSIM808::EFMSIM808(std::unique_ptr<io::ByteIO> io)
     }
 }
 
-util::Status EFMSIM808::SetPower(bool on) {
-    // The manual says this can take up to 33s.
-    auto end = std::chrono::system_clock::now() + std::chrono::seconds(33);
-
+util::Status EFMSIM808::SetPower(bool on, std::chrono::system_clock::time_point timeout) {
     LOG(INFO) << "Powering: " << on;
 
     auto statusor = PowerStatus();
@@ -67,7 +64,7 @@ util::Status EFMSIM808::SetPower(bool on) {
         return status;
 
     while (statusor.ok() && statusor.Value() != on) {
-        if (std::chrono::system_clock::now() > end) {
+        if (std::chrono::system_clock::now() > timeout) {
             GPIOOutput(GPIOPort::PortC, 0, false);
             return util::Status(util::error::Code::DEADLINE_EXCEEDED,
                                 "SetPower timeout");
@@ -85,6 +82,22 @@ util::Status EFMSIM808::SetPower(bool on) {
     return statusor.status();
 }
 
+util::Status EFMSIM808::SetPowerRetry(bool on) {
+    // The manual says this can take up to 33s.
+    int timeouts[] = {1, 10, 33};
+
+    util::Status status;
+    for (int i = 0; i < sizeof(timeouts)/sizeof(timeouts[0]); i++) {
+        auto end = std::chrono::system_clock::now()
+            + std::chrono::seconds(timeouts[i]);
+        status = SetPower(on, end);
+        if (status.error_code() != util::error::Code::DEADLINE_EXCEEDED)
+            return status;
+    }
+
+    return status;
+}
+
 util::Status EFMSIM808::PowerCycle() {
     auto statusor = PowerStatus();
     if (!statusor.ok())
@@ -92,7 +105,7 @@ util::Status EFMSIM808::PowerCycle() {
 
     // Power off if not already off.
     if (statusor.Value()) {
-        auto status = SetPower(false);
+        auto status = SetPowerRetry(false);
         if (!status.ok())
             return status;
     }
@@ -101,7 +114,7 @@ util::Status EFMSIM808::PowerCycle() {
     auto end = now + std::chrono::seconds(1);
     while (std::chrono::system_clock::now() < end);
 
-    return SetPower(true);
+    return SetPowerRetry(true);
 }
 
 }  // namespace efm32
