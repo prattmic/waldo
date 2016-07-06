@@ -16,6 +16,7 @@ efm32_binary(
         "//http",
         "//http:sim_http",
         "//io:byteio",
+        "//io:logging_byteio",
         "//io:uart_byteio",
         "//log",
         "@com_github_prattmic_nanopb//util/task:status",

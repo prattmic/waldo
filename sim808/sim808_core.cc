@@ -18,6 +18,8 @@ void SIM808::TryConsumeLine(std::chrono::system_clock::time_point timeout) {
             return;
         }
 
+        LOG(WARNING) << "TryConsumeLine got: " << static_cast<char>(statusor.Value());
+
         if (statusor.Value() == '\n')
             return;
     }
@@ -42,6 +44,7 @@ Status SIM808::VerifyResponse(const char *expected,
         }
 
         if (statusor.Value() != *expected) {
+            LOG(WARNING) << "Unexpected response: " << static_cast<char>(statusor.Value());
             // Try to consume the rest of this line (probably ERROR), so the
             // next reader doesn't choke on it.
             if (statusor.Value() != '\n')
@@ -218,7 +221,7 @@ Status SIM808::SendSimpleCommand(const char *command, const char *response,
 StatusOr<size_t> SIM808::ReadResponse(
         const char *prefix, char *response, size_t size,
         std::chrono::system_clock::time_point timeout) {
-    LOG(INFO) << "Reading response for: " << prefix;
+    //LOG(INFO) << "Reading response for: " << prefix;
 
     // Preamble
     auto status = VerifyResponse("\r\n", timeout);

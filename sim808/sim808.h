@@ -23,6 +23,9 @@ class SIM808 {
 
     Status Initialize();
 
+    // Return true if module is connected to the cellular network.
+    StatusOr<bool> NetworkConnected();
+
     // Check if the GNS module is enabled.
     StatusOr<bool> GNSEnabled();
 

@@ -32,7 +32,7 @@ void pretty_char(char c, char buf[5]) {
     } else {
         buf[0] = '0';
         buf[1] = 'x';
-        ::util::uitoa(c, &buf[2], 4, 16);
+        ::util::uitoa(c, &buf[2], 4, 16, 0);
     }
 }
 

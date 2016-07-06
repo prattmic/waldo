@@ -55,6 +55,15 @@ class Logger {
         return *this;
     }
 
+    Logger& operator<<(char c) {
+        if (internal::sink) {
+            char buf[2] = {};
+            buf[0] = c;
+            *internal::sink << buf;
+        }
+        return *this;
+    }
+
     Logger& operator<<(bool b) {
         if (internal::sink) {
             if (b)

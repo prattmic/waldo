@@ -9,6 +9,7 @@
 #include "http/http.h"
 #include "http/sim_http.h"
 #include "io/byteio.h"
+#include "io/logging_byteio.h"
 #include "io/uart_byteio.h"
 #include "log/log.h"
 #include "sim808/sim808.h"
@@ -23,7 +24,9 @@ void HTTP() {
 
     auto uart_io = statusor.ConsumeValue();
     std::unique_ptr<io::ByteIO> sim_io(new io::UartByteIO(std::move(uart_io)));
+    //std::unique_ptr<io::ByteIO> logging_io(new io::LoggingByteIO(std::move(sim_io)));
 
+    //auto sim = efm32::EFMSIM808(std::move(logging_io));
     auto sim = efm32::EFMSIM808(std::move(sim_io));
 
     LOG(INFO) << "Power cycling SIM808";
@@ -44,6 +47,18 @@ void HTTP() {
     if (!status.ok()) {
         LOG(ERROR) << "Failed to initialize SIM808: " << status.error_message();
         return;
+    }
+
+    while (1) {
+        LOG(INFO) << "Checking network status...";
+        auto statusor = sim.NetworkConnected();
+        if (!statusor.ok()) {
+            LOG(ERROR) << "Failed to get network status: " << statusor.status().error_message();
+            return;
+        }
+        if (statusor.Value()) {
+            break;
+        }
     }
 
     status = sim.GPRSEnable(true);

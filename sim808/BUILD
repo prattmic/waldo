@@ -5,6 +5,7 @@ cc_library(
     srcs = [
         "gns.cc",
         "http.cc",
+        "network.cc",
         "sim808_core.cc",
     ],
     hdrs = [

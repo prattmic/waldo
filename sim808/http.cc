@@ -52,7 +52,7 @@ Status SIM808::GPRSEnable(bool enable) {
     if (enable) {
         // Set to GPRS mode.
         auto status = SendSimpleCommand("AT+SAPBR=3,1,\"Contype\", \"GPRS\"",
-                                        "OK", std::chrono::milliseconds(100));
+                                        "OK", std::chrono::milliseconds(500));
         if (!status.ok())
             return status;
 
