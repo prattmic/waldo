@@ -9,6 +9,35 @@
 
 namespace io {
 
+class RingBuffer {
+ public:
+    util::StatusOr<char> Read() {
+        __disable_irq();
+        if (start_ != end_) {
+            char c = buf_[start_];
+            start_ = (start_+1) % kBufferSize;
+            __enable_irq();
+            return c;
+        }
+        __enable_irq();
+        return util::Status(util::error::Code::RESOURCE_EXHAUSTED,
+                            "buffer empty");
+    }
+
+    // Only to be called by interrupt handler.
+    void Write(char c) {
+        buf_[end_] = c;
+        end_ = (end_+1) % kBufferSize;
+    }
+
+ private:
+    static constexpr int kBufferSize = 512;
+
+    char buf_[kBufferSize];
+    int start_ = 0;
+    int end_ = 0;
+};
+
 class UartByteIO : public ByteIO {
  public:
     static ::util::StatusOr<UartByteIO> Uart0();
@@ -24,17 +53,21 @@ class UartByteIO : public ByteIO {
     UartByteIO() {};
 
     // Move constructor.
-    UartByteIO(UartByteIO&& other) : regs_(other.regs_) {
+    UartByteIO(UartByteIO&& other)
+        : regs_(other.regs_), rx_buf_(other.rx_buf_) {
         other.regs_ = nullptr;
+        other.rx_buf_ = nullptr;
     }
 
     // Copy constructor.
     UartByteIO(const UartByteIO& other) = delete;
 
  private:
-    UartByteIO(USART_TypeDef *regs) : regs_(regs) {}
+    UartByteIO(USART_TypeDef *regs, RingBuffer* rx_buf)
+        : regs_(regs), rx_buf_(rx_buf) {}
 
-    USART_TypeDef *regs_;
+    USART_TypeDef* regs_;
+    RingBuffer* rx_buf_;
 };
 
 }  // namespace io

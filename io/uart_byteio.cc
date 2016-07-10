@@ -4,7 +4,10 @@
 #include "log/log.h"
 #include "third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Include/em_device.h"
 
-using io::UartByteIO;
+namespace io {
+
+RingBuffer uart0_rx_buf;
+RingBuffer uart1_rx_buf;
 
 util::StatusOr<UartByteIO> UartByteIO::Uart1() {
     // TODO(prattmic): some of this clock work should be moved.
@@ -35,10 +38,13 @@ util::StatusOr<UartByteIO> UartByteIO::Uart1() {
     // CLKDIV = 1688
     usart1->CLKDIV = 1688 & _USART_CLKDIV_DIV_MASK;
 
+    NVIC->ISER[0] = 1 << USART1_RX_IRQn;
+    usart1->IEN |= USART_IEN_RXDATAV;
+
     // USART enable
     usart1->CMD = USART_CMD_RXEN | USART_CMD_TXEN;
 
-    return UartByteIO(usart1);
+    return UartByteIO(usart1, &uart1_rx_buf);
 }
 
 // TODO(prattmic): deduplicate
@@ -69,10 +75,13 @@ util::StatusOr<UartByteIO> UartByteIO::Uart0() {
     // CLKDIV = 1688
     usart0->CLKDIV = 93077 & _USART_CLKDIV_DIV_MASK;
 
+    NVIC->ISER[0] = 1 << USART0_RX_IRQn;
+    usart0->IEN |= USART_IEN_RXDATAV;
+
     // USART enable
     usart0->CMD = USART_CMD_RXEN | USART_CMD_TXEN;
 
-    return UartByteIO(usart0);
+    return UartByteIO(usart0, &uart0_rx_buf);
 }
 
 util::Status UartByteIO::Write(char c) {
@@ -85,13 +94,26 @@ util::Status UartByteIO::Write(char c) {
 }
 
 util::StatusOr<char> UartByteIO::Read() {
-    if (!(regs_->STATUS & USART_STATUS_RXDATAV))
-        return util::Status(util::error::Code::RESOURCE_EXHAUSTED, "no data");
-
     if (regs_->IF & USART_IF_RXOF) {
         regs_->IFC |= USART_IFC_RXOF;
         LOG(WARNING) << "RX overflow";
     }
 
-    return regs_->RXDATA;
+    return rx_buf_->Read();
+}
+
+}  // namespace io
+
+// Override default interrupt handlers in defined in
+// third_party/gecko_sdk/Device/SiliconLabs/EFM32HG/Source/GCC/startup_efm32hg.c.
+extern "C" void USART0_RX_IRQHandler() {
+    if (USART0->IF & USART_IF_RXDATAV) {
+        io::uart0_rx_buf.Write(USART0->RXDATA);
+    }
+}
+
+extern "C" void USART1_RX_IRQHandler() {
+    if (USART1->IF & USART_IF_RXDATAV) {
+        io::uart1_rx_buf.Write(USART1->RXDATA);
+    }
 }
