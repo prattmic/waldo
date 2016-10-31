@@ -110,11 +110,66 @@ util::Status EFMSIM808::PowerCycle() {
             return status;
     }
 
+    // Flush anything old.
+    auto status = io_->FlushRead();
+    if (!status.ok())
+        return status;
+
+    // SIM808 won't notice if the power key switches too quickly.
     auto now = std::chrono::system_clock::now();
     auto end = now + std::chrono::seconds(1);
     while (std::chrono::system_clock::now() < end);
 
-    return SetPowerRetry(true);
+    status = SetPowerRetry(true);
+    if (!status.ok()) {
+        return status;
+    }
+
+    //LOG(INFO) << "SIM808 booted, waiting for RDY";
+
+    //// Wait for 'RDY' from the device.
+    //// We may get an arbitrary number of NUL bytes.
+    //now = std::chrono::system_clock::now();
+    //end = now + std::chrono::seconds(10);
+    //while (std::chrono::system_clock::now() < end);
+
+    return util::Status::OK;
+
+    char want = 'R';
+    while (1) {
+        if (std::chrono::system_clock::now() > end)
+            return util::Status(util::error::Code::DEADLINE_EXCEEDED, "timeout");
+
+        auto statusor = io_->Read();
+        if (!statusor.ok()) {
+            // Would block. retry.
+            if (statusor.status().error_code() ==
+                util::error::Code::RESOURCE_EXHAUSTED)
+                continue;
+
+            return statusor.status();
+        }
+
+        char c = statusor.Value();
+        LOG(INFO) << "Got character: " << static_cast<uint32_t>(c);
+        if (c == want) {
+            switch (want) {
+            case 'R':
+                want = 'D';
+                break;
+            case 'D':
+                want = 'Y';
+                break;
+            case 'Y':
+                // Done!
+                return util::Status::OK;
+            }
+        } else if (c == '\0') {
+            continue;
+        } else {
+            LOG(WARNING) << "Unexpected character: " << static_cast<uint32_t>(c);
+        }
+    }
 }
 
 }  // namespace efm32

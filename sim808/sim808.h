@@ -60,7 +60,7 @@ class SIM808 {
     // HTTPPost. Returns the number of bytes written to response.
     StatusOr<size_t> HTTPRead(uint8_t *response, size_t size);
 
- private:
+ protected:
     // Send a command and with a fixed expected response.
     Status SendSimpleCommand(const char *command, const char *response,
                              std::chrono::milliseconds timeout);
@@ -143,6 +143,7 @@ class SIM808 {
     Status CheckReady();
     Status InitAutoBaud();
     Status DisableCommandEcho();
+    Status DisableURC();
 
     // Prepare an HTTP request to uri.
     Status HTTPRequestSetup(const char *uri);

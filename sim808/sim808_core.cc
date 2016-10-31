@@ -6,6 +6,126 @@
 
 namespace sim808 {
 
+namespace {
+
+// Prefixes to all of the "Unsolicited Response Code" that may be received.
+// From section 19.3 of the SIM800 command manual.
+const char * const kURCPrefixes[] = {
+    "+CCWA",
+    "+CLIP",
+    "+CRING",
+    "+CREG",
+    "+CCWV",
+    "+CMTI",
+    "+CMT",
+    "+CBM",
+    "+CDS",
+    "+COLP",
+    "+CSSU",
+    "+CSSI",
+    "+CLCC",
+    "*PSNWID",
+    "*PSUTTZ",
+    "+CTZV",
+    "DST",
+    "+CSMINS",
+    "+CDRIND",
+    "+CHF",
+    "MO RING",
+    "MO CONNECTED",
+    "+CPIN",
+    "+CSQN",
+    "+SIMTONE",
+    "+STTONE",
+    "+CR",
+    "+CUSD",
+    "RING",
+    "NORMAL POWER DOWN",
+    "+CMTE",
+    "UNDER-VOLTAGE POWER DOWN",
+    "UNDER-VOLTAGE WARNNING",  // sic
+    "OVER-VOLTAGE POWER DOWN",
+    "OVER-VOLTAGE WARNNING",  // sic
+    "CHARGE-ONLY MODE",
+    "RDY",
+    "Call Ready",
+    "SMS Ready",
+    "+CFUN",
+    "CONNECT OK",
+    "CONNECT",
+    "CONNECT FAIL",
+    "ALREADY CONNECT",
+    "SEND OK",
+    "CLOSED",
+    "RECV FROM",
+    "+IPD",
+    "+RECEIVE",
+    "REMOTE IP",
+    "+CDNSGIP",
+    "+PDP",
+    "+SAPBR",
+    "+HTTPACTION",
+    "+FTPGET",
+    "+FTPPUT",
+    "+FTPDELE",
+    "+FTPSIZE",
+    "+FTPMKD",
+    "+FTPRMD",
+    "+FTPLIST",
+    "+CGREG",
+    "ALARM RING",
+    "+CALV",
+};
+
+// Longest prefix in kURCPrefixes. "UNDER-VOLTAGE POWER DOWN"
+constexpr int kLongestURCPrefix = 25;
+
+int number_matching_characters(const char* s1, const char* s2) {
+    int count = 0;
+
+    while (*s1 && *s2) {
+        if (*s1 == *s2)
+            count++;
+
+        s1++;
+        s2++;
+    }
+
+    return count;
+}
+
+}  // namespace {
+
+// Check if this message is a URC. If it is, consume it.
+// The previously received bytes are in partial at indicies [0, n).
+// Returns CANCELLED if this is not a URC.
+Status SIM808::CheckAndHandleURC(const char* partial, size_t n,
+                                 std::chrono::system_clock::time_point timeout) {
+    char buf[kLongestURCPrefix+1] = {};
+
+    size_t buf_len = kLongestURCPrefix;
+    if (buf_len > n)
+        buf_len = n;
+
+    memcpy(buf, partial, buf_len);
+
+    bool could_match = false;
+    bool does_match = false;
+    for (int i = 0; i < sizeof(kURCPrefixes) / sizeof(kURCPrefixes[0]); i++) {
+        size_t prefix_len = strlen(kURCPrefixes[i]);
+        int num_matching = number_matching_characters(buf, kURCPrefixes[i]);
+        if (num_matching == prefix_len) {
+            does_match = true;
+            break;
+        } else if (num_matching == buf_len) {
+            could_match = true;
+            break;
+        }
+    }
+
+    return Status(util::error::Code::CANCELLED, "not a URC");
+}
+
 void SIM808::TryConsumeLine(std::chrono::system_clock::time_point timeout) {
     while (std::chrono::system_clock::now() < timeout) {
         auto statusor = io_->Read();
@@ -50,6 +170,8 @@ Status SIM808::VerifyResponse(const char *expected,
             if (statusor.Value() != '\n')
                 TryConsumeLine(timeout);
             return Status(::util::error::Code::UNKNOWN, "unexpected response");
+        } else {
+            //LOG(INFO) << "Expected response: " << static_cast<char>(statusor.Value());
         }
 
         expected++;
@@ -67,6 +189,7 @@ void SIM808::TryAbort() {
 // The SIM808 turns on in auto-baud mode. We need to send "AT" a few times
 // to get it ready for further commands.
 Status SIM808::InitAutoBaud() {
+    bool ok = false;
     for (int i = 0; i < 50; i++) {
         auto end = std::chrono::system_clock::now()
             + std::chrono::milliseconds(100);
@@ -82,12 +205,27 @@ Status SIM808::InitAutoBaud() {
         }
 
         status = VerifyResponse("AT\r\r\nOK\r\n", end);
-        if (status.ok())
-            return Status::OK;
+        if (status.ok()) {
+            ok = true;
+            break;
+        }
     }
 
-    return Status(::util::error::Code::DEADLINE_EXCEEDED,
-                  "unable to initialize device auto-baud");
+    if (!ok) {
+        return Status(::util::error::Code::DEADLINE_EXCEEDED,
+                      "unable to initialize device auto-baud");
+    }
+
+    // Wait around 10s and see if we get 'RDY', which it sent on
+    // boot, but we may have already missed.
+    LOG(INFO) << "Autobaud done, waiting for RDY";
+    //auto now = std::chrono::system_clock::now();
+    //auto end = now + std::chrono::seconds(10);
+    //auto status = VerifyResponse("\r\nRDY\r\n\r\n+CFUN: 1\r\n\r\n+CPIN: READY\r\n", end);
+    //if (status.error_code() == util::error::Code::DEADLINE_EXCEEDED)
+    //    status = util::Status::OK;
+
+    return util::Status::OK;
 }
 
 // Disabling command echoing makes further command responses easier to handle.
@@ -104,6 +242,11 @@ Status SIM808::DisableCommandEcho() {
         }
 
         return VerifyResponse("ATE0\r\r\nOK\r\n", end);
+}
+
+Status SIM808::DisableURC() {
+    return SendSimpleCommand("AT+CIURC=0", "OK",
+                             std::chrono::milliseconds(100));
 }
 
 // Check if the device is ready and can skip initialization.
@@ -130,7 +273,21 @@ Status SIM808::Initialize() {
     if (!status.ok())
         return status;
 
-    return DisableCommandEcho();
+    status = DisableCommandEcho();
+    if (!status.ok())
+        return status;
+
+    status = DisableURC();
+    if (!status.ok())
+        return status;
+
+    LOG(INFO) << "Waiting for RDY";
+    auto now = std::chrono::system_clock::now();
+    auto end = now + std::chrono::seconds(10);
+    status = VerifyResponse("\r\nRDY\r\n\r\n+CFUN: 1\r\n\r\n+CPIN: READY\r\n", end);
+    if (status.error_code() == util::error::Code::DEADLINE_EXCEEDED)
+        status = util::Status::OK;
+    return status;
 }
 
 Status SIM808::WriteParameterizedCommand(
