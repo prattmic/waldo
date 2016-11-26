@@ -145,6 +145,9 @@ class SIM808 {
     Status DisableCommandEcho();
     Status DisableURC();
 
+    Status CheckAndHandleURC(const char* partial, size_t n,
+                             std::chrono::system_clock::time_point timeout);
+
     // Prepare an HTTP request to uri.
     Status HTTPRequestSetup(const char *uri);
 
