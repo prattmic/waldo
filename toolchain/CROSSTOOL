@@ -35,6 +35,17 @@ toolchain {
   cxx_flag: "-std=c++14"
   linker_flag: "-lstdc++"
 
+  # Utilize "nano" libc and libstdc++. These are included in the Debian
+  # libstdc++-arm-none-eabi package. They are built with no exceptions and
+  # short wchar to reduce code and data size.
+  compiler_flag: "-specs=/usr/lib/arm-none-eabi/lib/nano.specs"
+  compiler_flag: "-fno-exceptions"
+  compiler_flag: "-fshort-wchar"
+  linker_flag: "-specs=/usr/lib/arm-none-eabi/lib/nano.specs"
+  # crtbegin.o is unfortunately not built with -fshort-wchar, so the linker
+  # complains, but we know it doesn't actually use wchar_t.
+  linker_flag: "-Wl,--no-wchar-size-warning"
+
   # TODO(bazel-team): In theory, the path here ought to exactly match the path
   # used by gcc. That works because bazel currently doesn't track files at
   # absolute locations and has no remote execution, yet. However, this will need
