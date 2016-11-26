@@ -1,2 +1,2 @@
 # Build for Cortex-M0+ by default
-build:cortex-m0plus --crosstool_top=//toolchain --host_crosstool_top=//tools/cpp:toolchain --cpu=cortex-m0plus
+build:cortex-m0plus --crosstool_top=//toolchain --host_crosstool_top=@bazel_tools//tools/cpp:toolchain --cpu=cortex-m0plus
